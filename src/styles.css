@@ -1,48 +1,74 @@
 /*
- * The task says unstyled is fine and that CSS is not what is being looked at,
- * so this stays deliberately small: one file, no framework, no component
- * styles. It is written against semantic elements rather than class names, so
- * the markup carries no styling hooks and screens added later inherit this
- * without touching it.
+ * One stylesheet, no framework, no component styles. It is written against
+ * semantic elements rather than class names, so the markup carries no styling
+ * hooks and screens added later inherit all of this without touching it.
  *
- * What it is for is legibility. A reviewer has to read forms, spot which field
- * an error belongs to, and tell a primary action from a secondary one. That is
- * worth a hundred lines and no more.
+ * The direction is quiet and expensive rather than loud: warm ivory instead of
+ * flat white, a deep forest accent with brass kept for one detail, hairline
+ * rules instead of shadows, and a serif with real optical sizing carrying the
+ * headings. Property is a considered purchase and the surface should feel like
+ * one.
  */
 
 :root {
   color-scheme: light dark;
 
-  --paper: #fbfbfa;
+  /* Ivory rather than #fff. Pure white next to white reads as unfinished. */
+  --paper: #f6f4ef;
   --surface: #ffffff;
-  --ink: #14181c;
-  --muted: #5c6670;
-  --line: #dfe3e2;
-  --accent: #1d6f4f;
-  --accent-ink: #ffffff;
-  --accent-soft: #e8f2ed;
-  --danger: #a5372b;
-  --danger-soft: #fbecea;
-  --radius: 6px;
+  --sunk: #f0ede6;
+  --ink: #16191b;
+  --ink-soft: #3d4145;
+  --muted: #74756e;
+  --hairline: #e3ded3;
+  --hairline-strong: #d3cdbf;
 
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  line-height: 1.55;
+  --accent: #1e4b3c;
+  --accent-hover: #17392e;
+  --accent-ink: #f6f4ef;
+  --accent-wash: #edf2ef;
+
+  /* Used once, on the mark. Restraint is what keeps it from looking cheap. */
+  --brass: #a8833b;
+
+  --danger: #8f3527;
+  --danger-wash: #f9ece8;
+
+  --radius: 10px;
+  --radius-sm: 7px;
+
+  --display: 'Fraunces', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --body: 'Schibsted Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
   background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0f1214;
-    --surface: #161b1e;
-    --ink: #e8ecee;
-    --muted: #98a3aa;
-    --line: #2a3236;
-    --accent: #5cbf93;
-    --accent-ink: #0f1214;
-    --accent-soft: #14251f;
-    --danger: #e08a7c;
-    --danger-soft: #2a1714;
+    --paper: #0f1112;
+    --surface: #17191b;
+    --sunk: #131517;
+    --ink: #eceae4;
+    --ink-soft: #c6c5bd;
+    --muted: #918f87;
+    --hairline: #272a2c;
+    --hairline-strong: #343739;
+
+    --accent: #6fb89c;
+    --accent-hover: #86c9ae;
+    --accent-ink: #0f1112;
+    --accent-wash: #16241f;
+
+    --brass: #c9a961;
+
+    --danger: #e08a78;
+    --danger-wash: #2a1713;
   }
 }
 
@@ -61,24 +87,31 @@ body {
 header {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem 1.5rem;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  gap: 1.25rem;
+  padding: 1.15rem clamp(1.25rem, 5vw, 3rem);
+  border-bottom: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  backdrop-filter: saturate(1.4) blur(8px);
 }
 
-/* The brand is always first; everything else sits at the other end. */
+/* The brand is always the first child; everything else sits at the far end. */
 header > a:first-child {
   margin-right: auto;
-  font-weight: 650;
-  letter-spacing: 0.02em;
+  font-family: var(--display);
+  font-optical-sizing: auto;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   text-decoration: none;
   color: var(--ink);
+  border-bottom: 2px solid var(--brass);
+  padding-bottom: 1px;
 }
 
 header span {
-  color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
 }
 
 header [role='status'] {
@@ -88,33 +121,40 @@ header [role='status'] {
 /* ── Page ───────────────────────────────────────────────────────────────── */
 
 main {
-  max-width: 34rem;
+  max-width: 35rem;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: clamp(3rem, 9vw, 5.5rem) clamp(1.25rem, 5vw, 3rem) 6rem;
 }
 
 h1 {
-  font-size: 1.45rem;
-  line-height: 1.25;
-  margin: 0 0 0.4rem;
-  letter-spacing: -0.01em;
-}
-
-h2 {
-  font-size: 1.05rem;
-  margin: 2rem 0 0.5rem;
+  font-family: var(--display);
+  font-optical-sizing: auto;
+  font-size: clamp(2rem, 5.5vw, 2.75rem);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  margin: 0 0 0.6rem;
 }
 
 p {
-  margin: 0 0 1rem;
+  margin: 0 0 1.1rem;
+  max-width: 62ch;
 }
 
 main > p:first-of-type {
+  font-size: 1.05rem;
   color: var(--muted);
 }
 
 a {
   color: var(--accent);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  color: var(--accent-hover);
 }
 
 /* ── Forms ──────────────────────────────────────────────────────────────── */
@@ -122,29 +162,34 @@ a {
 form {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
-  margin-top: 1.75rem;
-  padding: 1.5rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  gap: 1.6rem;
+  margin-top: 2.5rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
   background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgb(22 25 27 / 4%), 0 18px 40px -32px rgb(22 25 27 / 22%);
 }
 
 form > p {
   margin: 0;
+  font-size: 0.95rem;
   color: var(--muted);
-  font-size: 0.925rem;
 }
 
 form > div {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 
-label {
-  font-size: 0.875rem;
-  font-weight: 550;
+label,
+legend {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 input,
@@ -152,32 +197,42 @@ select,
 textarea {
   font: inherit;
   width: 100%;
-  padding: 0.5rem 0.65rem;
+  padding: 0.7rem 0.85rem;
   color: var(--ink);
   background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+input:hover:not(:disabled),
+textarea:hover {
+  border-color: var(--muted);
 }
 
 textarea {
-  min-height: 6rem;
+  min-height: 7rem;
+  line-height: 1.6;
   resize: vertical;
 }
 
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-button:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+input:disabled {
+  color: var(--muted);
+  background: var(--sunk);
+  cursor: default;
 }
 
-/* Radio groups: the label wraps the input, so it lays out as a row. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Radio group. The label wraps its input, so each one can be a target in its
+   own right rather than a dot with text beside it. */
 fieldset {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.55rem;
   margin: 0;
   padding: 0;
   border: 0;
@@ -185,80 +240,127 @@ fieldset {
 
 legend {
   padding: 0;
-  font-size: 0.875rem;
-  font-weight: 550;
+  margin-bottom: 0.55rem;
 }
 
 fieldset label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.95rem;
   font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+fieldset label:hover {
+  border-color: var(--muted);
+}
+
+/* Falls back to a plain radio where :has() is unsupported. */
+fieldset label:has(input:checked) {
+  background: var(--accent-wash);
+  border-color: var(--accent);
 }
 
 fieldset input {
   width: auto;
+  accent-color: var(--accent);
 }
 
 fieldset > p:last-child {
-  margin: 0.15rem 0 0;
-  color: var(--muted);
+  margin: 0.2rem 0 0;
   font-size: 0.85rem;
+  color: var(--muted);
 }
 
 /* ── Buttons ────────────────────────────────────────────────────────────── */
 
 button {
   font: inherit;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
+  font-weight: 600;
+  align-self: flex-start;
+  padding: 0.7rem 1.4rem;
   border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 button[type='submit'] {
-  align-self: flex-start;
   color: var(--accent-ink);
   background: var(--accent);
-  font-weight: 550;
+  letter-spacing: 0.01em;
+}
+
+button[type='submit']:hover:not(:disabled) {
+  background: var(--accent-hover);
 }
 
 button[type='button'] {
-  align-self: flex-start;
   color: var(--ink);
-  background: var(--surface);
-  border-color: var(--line);
+  background: transparent;
+  border-color: var(--hairline-strong);
+}
+
+button[type='button']:hover:not(:disabled) {
+  border-color: var(--ink);
 }
 
 button:disabled {
-  opacity: 0.55;
+  opacity: 0.45;
   cursor: default;
 }
 
-/* ── Errors ─────────────────────────────────────────────────────────────── */
-
-/* Per-field messages, tied to their input by aria-describedby. */
-[id$='-error'] {
-  margin: 0;
-  color: var(--danger);
+header button {
+  padding: 0.4rem 0.9rem;
   font-size: 0.85rem;
 }
 
-[role='alert'] {
-  margin-top: 1.25rem;
-  padding: 0.7rem 0.85rem;
+/* ── Messages ───────────────────────────────────────────────────────────── */
+
+/* Per-field, tied to its input by aria-describedby. */
+[id$='-error'] {
+  margin: 0;
+  font-size: 0.85rem;
   color: var(--danger);
-  background: var(--danger-soft);
-  border: 1px solid var(--danger);
-  border-radius: var(--radius);
+}
+
+[id$='-hint'] {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+[role='alert'] {
+  margin-top: 1.5rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.92rem;
+  color: var(--danger);
+  background: var(--danger-wash);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+main [role='status'] {
+  margin-top: 1.25rem;
   font-size: 0.9rem;
+  color: var(--accent);
 }
 
 code {
-  font-size: 0.9em;
-  padding: 0.1em 0.3em;
-  background: var(--accent-soft);
-  border-radius: 3px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.88em;
+  padding: 0.12em 0.36em;
+  background: var(--accent-wash);
+  border-radius: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {

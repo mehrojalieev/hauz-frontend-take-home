@@ -21,7 +21,22 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'HAUZ' },
     ],
-    links: [{ rel: 'stylesheet', href: appCss }],
+    links: [
+      // Loaded at runtime, not at build time, so a slow or blocked font host
+      // delays glyphs and nothing else. Both families have a real fallback
+      // stack in the stylesheet.
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap',
+      },
+      { rel: 'stylesheet', href: appCss },
+    ],
   }),
 
   // This HTML names the person looking at it, so it is not something a CDN or
