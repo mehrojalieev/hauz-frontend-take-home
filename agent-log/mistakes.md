@@ -114,7 +114,7 @@ would have seen `safeRedirect` and moved on.
 `safeRedirect` at the point of use, in both `beforeLoad` and the component,
 because cleaning it in one does not clean it in the other. Retested against the
 running app: hostile values land on the home page, `/profile` still comes back.
-Commit `<redirect>`.
+Commit `e821737`.
 
 ---
 
