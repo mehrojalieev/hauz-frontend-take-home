@@ -70,7 +70,7 @@ function describeFailure(error: unknown, whenUnauthorized: Failure): Failure {
 }
 
 export const requestSignInCode = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z.object({ email: z.email().max(254) }).parse(data),
   )
   .handler(async ({ data }): Promise<Success | Failure> => {
@@ -95,7 +95,7 @@ export const requestSignInCode = createServerFn({ method: 'POST' })
   })
 
 export const verifySignInCode = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z
       .object({ code: z.string().trim().regex(/^\d{6}$/, 'Enter the 6 digit code.') })
       .parse(data),

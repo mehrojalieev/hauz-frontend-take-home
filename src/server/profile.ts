@@ -29,5 +29,5 @@ const onboardingInput = z.object({
 })
 
 export const createAccount = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => onboardingInput.parse(data))
+  .validator((data: unknown) => onboardingInput.parse(data))
   .handler(async ({ data }): Promise<CreateOutcome> => createPersonalAccount(data))
