@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, useRouteContext, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -9,14 +10,10 @@ import {
   SunIcon,
 } from '#/components/icons'
 import { Menu } from '#/components/menu'
-import { setLocale, setTheme } from '#/server/preferences'
+import { refreshShell } from '#/lib/shell'
+import { usePreferences } from '#/components/preferences'
 import { signOut } from '#/server/session'
-import {
-  LOCALES,
-  LOCALE_LABELS,
-  translator,
-  type Locale,
-} from '#/shared/i18n'
+import { LOCALES, LOCALE_LABELS } from '#/shared/i18n'
 import { THEMES, type Theme } from '#/shared/theme'
 
 /** The leading icon says which one is in effect without reading the label. */
@@ -33,26 +30,12 @@ const THEME_ICONS: Record<Theme, typeof SunIcon> = {
  * which is the flash the brief rules out.
  */
 export function SiteHeader() {
-  const { viewer, theme, locale } = useRouteContext({ from: '__root__' })
+  const { viewer } = useRouteContext({ from: '__root__' })
+  const { theme, locale, t, chooseTheme, chooseLocale } = usePreferences()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [leaving, setLeaving] = useState(false)
-  const t = translator(locale)
   const ThemeIcon = THEME_ICONS[theme]
-
-  // Both preferences live in cookies the server reads, so the page is
-  // re-resolved rather than patched in the browser. That is also what stops a
-  // later hard refresh from flashing the setting they just left.
-  async function chooseTheme(next: Theme) {
-    if (next === theme) return
-    await setTheme({ data: { theme: next } })
-    await router.invalidate()
-  }
-
-  async function chooseLocale(next: Locale) {
-    if (next === locale) return
-    await setLocale({ data: { locale: next } })
-    await router.invalidate()
-  }
 
   async function handleSignOut() {
     if (leaving) return
@@ -62,7 +45,7 @@ export function SiteHeader() {
       await signOut()
       // Re-runs the root beforeLoad. Without it the header keeps rendering the
       // person who just left.
-      await router.invalidate()
+      await refreshShell(router, queryClient)
       await router.navigate({ to: '/' })
     } finally {
       setLeaving(false)

@@ -1,9 +1,11 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { refreshShell } from '#/lib/shell'
+import { usePreferences } from '#/components/preferences'
+
 import { createAccount } from '#/server/profile'
-import { translator } from '#/shared/i18n'
 import { PERSONAL_ROLES, type PersonalRole } from '#/shared/personal-account'
 import { redirectParam, safeRedirect } from '#/shared/redirect'
 
@@ -38,8 +40,8 @@ export const Route = createFileRoute('/onboarding')({
 
 function Onboarding() {
   const router = useRouter()
-  const { locale } = Route.useRouteContext()
-  const t = translator(locale)
+  const queryClient = useQueryClient()
+  const { t } = usePreferences()
   // Cleaned here too. beforeLoad cleaning it does not clean what this reads.
   const next = safeRedirect(Route.useSearch().redirect)
 
@@ -57,7 +59,7 @@ function Onboarding() {
     }) => createAccount({ data: input }),
     onSuccess: async (outcome) => {
       if (outcome.state === 'ready') {
-        await router.invalidate()
+        await refreshShell(router, queryClient)
         await router.navigate({ href: next })
         return
       }
@@ -71,7 +73,7 @@ function Onboarding() {
       }
 
       if (outcome.state === 'signed-out') {
-        await router.invalidate()
+        await refreshShell(router, queryClient)
         await router.navigate({ to: '/signin' })
         return
       }
@@ -107,9 +109,9 @@ function Onboarding() {
   }
 
   return (
-    <main>
+    <main className="auth">
       <h1>{t('onboarding.title')}</h1>
-      <p>{t('onboarding.intro')}</p>
+      <p>{t('onboarding.subtitle')}</p>
 
       <form onSubmit={handleSubmit}>
         <div>

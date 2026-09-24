@@ -1,9 +1,12 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { refreshShell } from '#/lib/shell'
+import { HomeIcon } from '#/components/icons'
+import { usePreferences } from '#/components/preferences'
+
 import { requestSignInCode, verifySignInCode } from '#/server/auth'
-import { translator } from '#/shared/i18n'
 import { redirectParam, safeRedirect } from '#/shared/redirect'
 
 export const Route = createFileRoute('/signin')({
@@ -28,8 +31,8 @@ export const Route = createFileRoute('/signin')({
  */
 function SignIn() {
   const router = useRouter()
-  const { locale } = Route.useRouteContext()
-  const t = translator(locale)
+  const queryClient = useQueryClient()
+  const { t } = usePreferences()
   // Cleaned on the way out of the URL, never trusted as read.
   const next = safeRedirect(Route.useSearch().redirect)
 
@@ -69,7 +72,7 @@ function SignIn() {
       // The cookie changed, but the router still holds the auth state it was
       // rendered with. Re-run the root beforeLoad before navigating, or the
       // next screen renders as though nobody signed in.
-      await router.invalidate()
+      await refreshShell(router, queryClient)
       // Always onboarding, carrying where they were going. Its own guard sends
       // people who already have an account straight on, so there is one
       // destination here instead of a second lookup to choose between two.
@@ -80,8 +83,19 @@ function SignIn() {
   const busy = request.isPending || verify.isPending
 
   return (
-    <main>
+    <main className="auth">
+      <p className="badge" aria-hidden="true">
+        <HomeIcon size={20} />
+      </p>
+
       <h1>{t('signin.title')}</h1>
+      <p>{t('signin.subtitle')}</p>
+      <p className="step">
+        {t('signin.step', {
+          current: sentTo === null ? '1' : '2',
+          total: '2',
+        })}
+      </p>
 
       {sentTo === null ? (
         <form
@@ -92,8 +106,6 @@ function SignIn() {
             request.mutate(email)
           }}
         >
-          <p>{t('signin.intro')}</p>
-
           <label htmlFor="email">{t('signin.email')}</label>
           <input
             id="email"
@@ -139,6 +151,7 @@ function SignIn() {
 
           <button
             type="button"
+            className="quiet"
             disabled={busy}
             onClick={() => {
               setError(null)
@@ -156,6 +169,8 @@ function SignIn() {
           {error}
         </p>
       )}
+
+      {sentTo !== null && <p className="note">{t('signin.spamNote')}</p>}
     </main>
   )
 }

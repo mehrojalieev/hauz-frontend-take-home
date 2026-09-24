@@ -1,9 +1,10 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { refreshShell } from '#/lib/shell'
+import { usePreferences } from '#/components/preferences'
 import { saveProfile } from '#/server/profile'
-import { translator, type Locale } from '#/shared/i18n'
 import { redirectParam } from '#/shared/redirect'
 import {
   buildPatch,
@@ -33,8 +34,8 @@ export const Route = createFileRoute('/profile')({
 })
 
 function Profile() {
-  const { viewer, locale } = Route.useRouteContext()
-  const t = translator(locale)
+  const { viewer } = Route.useRouteContext()
+  const { t } = usePreferences()
 
   if (viewer.state !== 'ready') {
     // Only reachable when the viewer is `unknown`: signed-out and onboarding
@@ -48,18 +49,13 @@ function Profile() {
     )
   }
 
-  return <ProfileForm account={viewer.account} locale={locale} />
+  return <ProfileForm account={viewer.account} />
 }
 
-function ProfileForm({
-  account,
-  locale,
-}: {
-  account: PersonalAccount
-  locale: Locale
-}) {
+function ProfileForm({ account }: { account: PersonalAccount }) {
   const router = useRouter()
-  const t = translator(locale)
+  const queryClient = useQueryClient()
+  const { t } = usePreferences()
 
   // What was loaded. Every decision about what to send is made against this,
   // which is the only way to tell "left alone" from "cleared".
@@ -86,7 +82,7 @@ function ProfileForm({
         setError(null)
         setSaved(true)
         // The header shows the first name, so it has to be told too.
-        await router.invalidate()
+        await refreshShell(router, queryClient)
         return
       }
 
@@ -103,7 +99,7 @@ function ProfileForm({
       setIssues({})
 
       if (outcome.state === 'signed-out') {
-        await router.invalidate()
+        await refreshShell(router, queryClient)
         await router.navigate({ to: '/signin' })
         return
       }

@@ -46,8 +46,9 @@ const uz: Dictionary = {
     'Akkauntingizga hozir ulana olmadik. Bir ozdan keyin yangilang.',
 
   'signin.title': 'Kirish',
-  'signin.intro':
-    'Emailingizni kiriting, biz olti xonali kod yuboramiz.',
+  'signin.subtitle': 'Parol kerak emas. Emailingizga bir martalik kod keladi.',
+  'signin.spamNote': 'Kod kelmadimi? Spam papkasini tekshiring.',
+  'signin.step': '{current} / {total}-qadam',
   'signin.email': 'Email',
   'signin.send': 'Kod yuborish',
   'signin.sending': 'Yuborilmoqda…',
@@ -58,6 +59,7 @@ const uz: Dictionary = {
   'signin.otherEmail': 'Boshqa email ishlatish',
 
   'onboarding.title': 'O‘zingiz haqingizda',
+  'onboarding.subtitle': 'Profilingiz e’lonlaringiz yonida ko‘rinadi.',
   'onboarding.intro': 'HAUZ dan foydalanishdan oldin shu kerak.',
   'onboarding.firstName': 'Ism',
   'onboarding.lastName': 'Familiya',
@@ -114,7 +116,9 @@ const ru: Dictionary = {
     'Не удалось получить данные аккаунта. Обновите страницу чуть позже.',
 
   'signin.title': 'Вход',
-  'signin.intro': 'Укажите почту, и мы пришлём шестизначный код.',
+  'signin.subtitle': 'Пароль не нужен. На почту придёт одноразовый код.',
+  'signin.spamNote': 'Код не пришёл? Проверьте папку «Спам».',
+  'signin.step': 'Шаг {current} из {total}',
   'signin.email': 'Почта',
   'signin.send': 'Отправить код',
   'signin.sending': 'Отправляем…',
@@ -125,6 +129,7 @@ const ru: Dictionary = {
   'signin.otherEmail': 'Другая почта',
 
   'onboarding.title': 'Расскажите о себе',
+  'onboarding.subtitle': 'Профиль виден рядом с вашими объявлениями.',
   'onboarding.intro': 'Это нужно, чтобы пользоваться HAUZ.',
   'onboarding.firstName': 'Имя',
   'onboarding.lastName': 'Фамилия',
@@ -179,7 +184,9 @@ const en: Dictionary = {
     'We could not reach your account just now. Reload in a moment.',
 
   'signin.title': 'Sign in',
-  'signin.intro': 'Enter your email and we will send you a six digit code.',
+  'signin.subtitle': 'No password needed. We email you a one-time code.',
+  'signin.spamNote': 'No code? Check your spam folder.',
+  'signin.step': 'Step {current} of {total}',
   'signin.email': 'Email',
   'signin.send': 'Send code',
   'signin.sending': 'Sending…',
@@ -190,6 +197,7 @@ const en: Dictionary = {
   'signin.otherEmail': 'Use a different email',
 
   'onboarding.title': 'Tell us who you are',
+  'onboarding.subtitle': 'Your profile shows up next to your listings.',
   'onboarding.intro': 'You need this before you can use HAUZ.',
   'onboarding.firstName': 'First name',
   'onboarding.lastName': 'Last name',

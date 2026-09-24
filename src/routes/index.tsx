@@ -1,16 +1,20 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 
-import { ArrowRightIcon } from '#/components/icons'
-import { translator } from '#/shared/i18n'
+import { ArrowRightIcon, HomeIcon } from '#/components/icons'
+import { usePreferences } from '#/components/preferences'
 
 export const Route = createFileRoute('/')({ component: Home })
 
 function Home() {
-  const { viewer, locale } = Route.useRouteContext()
-  const t = translator(locale)
+  const { viewer } = Route.useRouteContext()
+  const { t } = usePreferences()
 
   return (
     <main>
+      <p className="badge" aria-hidden="true">
+        <HomeIcon size={20} />
+      </p>
+
       <h1>HAUZ</h1>
       <p>{t('home.tagline')}</p>
 
@@ -36,9 +40,13 @@ function Home() {
       )}
 
       {viewer.state === 'signed-out' && (
-        <p>
-          <Link to="/signin">{t('nav.signIn')}</Link> — {t('home.signInPrompt')}
-        </p>
+        <>
+          <p>{t('home.signInPrompt')}</p>
+          <Link to="/signin" className="cta">
+            {t('nav.signIn')}
+            <ArrowRightIcon size={15} />
+          </Link>
+        </>
       )}
 
       {viewer.state === 'unknown' && (

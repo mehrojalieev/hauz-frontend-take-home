@@ -7,8 +7,9 @@ import {
   useRouterState,
 } from '@tanstack/react-router'
 
+import { PreferencesProvider } from '#/components/preferences'
 import { SiteHeader } from '#/components/site-header'
-import { loadShell } from '#/server/session'
+import { shellQueryOptions } from '#/lib/shell'
 import appCss from '../styles.css?url'
 
 export interface RouterContext {
@@ -48,7 +49,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   // exists. That is what makes both the header and the palette right on the
   // first paint rather than corrected after hydration. Every child route reads
   // this same value, so no two parts of the page can disagree.
-  beforeLoad: async () => await loadShell(),
+  //
+  // Through the query cache, because resolving it costs a call to Appwrite and
+  // an execution of the Function, and moving between four screens should not
+  // pay that each time.
+  beforeLoad: async ({ context }) =>
+    await context.queryClient.ensureQueryData(shellQueryOptions()),
 
   component: RootLayout,
   shellComponent: RootDocument,
@@ -60,11 +66,13 @@ export const Route = createRootRouteWithContext<RouterContext>()({
  * in situations where the context this needs may never have been produced.
  */
 function RootLayout() {
+  const { theme, locale } = Route.useRouteContext()
+
   return (
-    <>
+    <PreferencesProvider theme={theme} locale={locale}>
       <SiteHeader />
       <Outlet />
-    </>
+    </PreferencesProvider>
   )
 }
 
