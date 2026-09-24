@@ -3,6 +3,7 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { saveProfile } from '#/server/profile'
+import { redirectParam } from '#/shared/redirect'
 import {
   buildPatch,
   formFrom,
@@ -12,14 +13,19 @@ import {
 } from '#/shared/personal-account'
 
 export const Route = createFileRoute('/profile')({
-  beforeLoad: ({ context }) => {
-    // Route UX, not the security boundary. saveProfile checks the session
-    // itself, and the Function checks it again.
+  beforeLoad: ({ context, location }) => {
+    // Route UX, not the security boundary: saveProfile checks the session
+    // itself and the Function checks it again. Both hops carry where they were
+    // trying to go, so signing in brings them back here rather than dropping
+    // them on the home page.
     if (context.viewer.state === 'signed-out') {
-      throw redirect({ to: '/signin' })
+      throw redirect({ to: '/signin', search: { redirect: redirectParam(location.href) } })
     }
     if (context.viewer.state === 'onboarding') {
-      throw redirect({ to: '/onboarding' })
+      throw redirect({
+        to: '/onboarding',
+        search: { redirect: redirectParam(location.href) },
+      })
     }
   },
   component: Profile,

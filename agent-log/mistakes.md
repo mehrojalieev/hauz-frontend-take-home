@@ -88,6 +88,36 @@ empty directory exits 1, real bundle exits 0. Commit `5ac55eb`.
 
 ---
 
+## 5. Trusted the router's own search validator to sanitise
+
+**What it wrote.** `validateSearch` on the sign-in and onboarding routes, running
+the `redirect` parameter through `safeRedirect` there, on the assumption that
+everything downstream would then be reading a cleaned value.
+
+**How I caught it.** I tried the attack against the running app rather than
+reading the code. `/onboarding?redirect=https://evil.com` forwarded the hostile
+value straight into the `/signin` URL. Logging both ends showed why:
+
+    [validateSearch] in  = {"redirect":"https://evil.com"}
+    [validateSearch] out = /
+    [useSearch]      redirect = "https://evil.com"
+
+The validator ran, returned the safe value, and the component was handed the
+raw one anyway.
+
+**Why it matters.** This is the open redirect the brief invites, and it would
+have shipped looking defended. The guard was present, readable, and in the
+wrong place, which is worse than no guard at all: a reviewer skimming the route
+would have seen `safeRedirect` and moved on.
+
+**Fix.** `validateSearch` now only declares the shape. Every read goes through
+`safeRedirect` at the point of use, in both `beforeLoad` and the component,
+because cleaning it in one does not clean it in the other. Retested against the
+running app: hostile values land on the home page, `/profile` still comes back.
+Commit `<redirect>`.
+
+---
+
 <!--
 Still to record as they happen. Likely candidates, based on where this stack is
 easy to get wrong:

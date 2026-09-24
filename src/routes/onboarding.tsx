@@ -4,16 +4,29 @@ import { useState } from 'react'
 
 import { createAccount } from '#/server/profile'
 import { PERSONAL_ROLES, type PersonalRole } from '#/shared/personal-account'
+import { redirectParam, safeRedirect } from '#/shared/redirect'
 
 export const Route = createFileRoute('/onboarding')({
-  beforeLoad: ({ context }) => {
+  // Declares the shape, and nothing more. It is tempting to sanitise here and
+  // be done, but measured against this version of the router that does not
+  // hold: validateSearch runs and returns the cleaned value, while
+  // Route.useSearch() still hands the component the raw one straight off the
+  // URL. Every read below goes through safeRedirect for that reason.
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
+    typeof search.redirect === 'string' ? { redirect: search.redirect } : {},
+  beforeLoad: ({ context, search }) => {
+    const next = safeRedirect(search.redirect)
     // Route UX, not a security boundary: the server function checks the session
     // itself, because it is a reachable endpoint whatever this says.
     if (context.viewer.state === 'signed-out') {
-      throw redirect({ to: '/signin' })
+      throw redirect({ to: '/signin', search: { redirect: redirectParam(next) } })
     }
+    // Already onboarded, so this screen has nothing to ask. Send them on to
+    // wherever they were originally headed.
     if (context.viewer.state === 'ready') {
-      throw redirect({ to: '/' })
+      // `href`, not `to`: the destination is data, not one of the literal
+      // route paths the router knows at compile time.
+      throw redirect({ href: next })
     }
     // `unknown` falls through on purpose. We cannot tell whether they have an
     // account, and the create route is idempotent, so letting them submit is
@@ -24,6 +37,8 @@ export const Route = createFileRoute('/onboarding')({
 
 function Onboarding() {
   const router = useRouter()
+  // Cleaned here too. beforeLoad cleaning it does not clean what this reads.
+  const next = safeRedirect(Route.useSearch().redirect)
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -40,7 +55,7 @@ function Onboarding() {
     onSuccess: async (outcome) => {
       if (outcome.state === 'ready') {
         await router.invalidate()
-        await router.navigate({ to: '/' })
+        await router.navigate({ href: next })
         return
       }
 
