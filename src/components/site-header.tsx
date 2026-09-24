@@ -2,13 +2,13 @@ import { Link, useRouteContext, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import {
-  ChevronDownIcon,
   GlobeIcon,
   LogOutIcon,
   MonitorIcon,
   MoonIcon,
   SunIcon,
 } from '#/components/icons'
+import { Menu } from '#/components/menu'
 import { setLocale, setTheme } from '#/server/preferences'
 import { signOut } from '#/server/session'
 import {
@@ -19,6 +19,7 @@ import {
 } from '#/shared/i18n'
 import { THEMES, type Theme } from '#/shared/theme'
 
+/** The leading icon says which one is in effect without reading the label. */
 const THEME_ICONS: Record<Theme, typeof SunIcon> = {
   system: MonitorIcon,
   light: SunIcon,
@@ -36,6 +37,7 @@ export function SiteHeader() {
   const router = useRouter()
   const [leaving, setLeaving] = useState(false)
   const t = translator(locale)
+  const ThemeIcon = THEME_ICONS[theme]
 
   // Both preferences live in cookies the server reads, so the page is
   // re-resolved rather than patched in the browser. That is also what stops a
@@ -74,41 +76,29 @@ export function SiteHeader() {
       </Link>
 
       <div className="tools">
-        {/* Three states shown as three targets. A cycling button hides two of
-            them behind guesswork about what comes next. */}
-        <div className="segmented" role="group" aria-label={t('nav.appearance')}>
-          {THEMES.map((option) => {
-            const Icon = THEME_ICONS[option]
-            return (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={option === theme}
-                aria-label={t(`theme.${option}`)}
-                title={t(`theme.${option}`)}
-                onClick={() => chooseTheme(option)}
-              >
-                <Icon />
-              </button>
-            )
-          })}
-        </div>
+        {/* Naming all three states beats a cycling button, which hid two of
+            them behind a guess about what came next. */}
+        <Menu
+          label={t('nav.appearance')}
+          value={theme}
+          options={THEMES.map((option) => ({
+            value: option,
+            label: t(`theme.${option}`),
+          }))}
+          onChange={chooseTheme}
+          leading={<ThemeIcon />}
+        />
 
-        <div className="select">
-          <GlobeIcon />
-          <select
-            aria-label={t('nav.language')}
-            value={locale}
-            onChange={(event) => chooseLocale(event.target.value as Locale)}
-          >
-            {LOCALES.map((option) => (
-              <option key={option} value={option}>
-                {LOCALE_LABELS[option]}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon size={14} />
-        </div>
+        <Menu
+          label={t('nav.language')}
+          value={locale}
+          options={LOCALES.map((option) => ({
+            value: option,
+            label: LOCALE_LABELS[option],
+          }))}
+          onChange={chooseLocale}
+          leading={<GlobeIcon />}
+        />
       </div>
 
       {viewer.state === 'ready' && (

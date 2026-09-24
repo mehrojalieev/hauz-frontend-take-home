@@ -79,6 +79,14 @@ export function ChevronDownIcon(props: IconProps) {
   )
 }
 
+export function CheckIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </Svg>
+  )
+}
+
 export function ArrowRightIcon(props: IconProps) {
   return (
     <Svg {...props}>
