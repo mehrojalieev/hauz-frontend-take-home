@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import {
   HeadContent,
+  Link,
   Outlet,
   Scripts,
   createRootRouteWithContext,
@@ -10,6 +11,7 @@ import {
 import { PreferencesProvider } from '#/components/preferences'
 import { SiteHeader } from '#/components/site-header'
 import { shellQueryOptions } from '#/lib/shell'
+import { parseLocale, translator } from '#/shared/i18n'
 import appCss from '../styles.css?url'
 
 export interface RouterContext {
@@ -57,8 +59,32 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     await context.queryClient.ensureQueryData(shellQueryOptions()),
 
   component: RootLayout,
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 })
+
+/**
+ * Replaces the root component rather than rendering inside it, so there is no
+ * header here and no preferences context to read from. The language is taken
+ * off the router state the same way the shell takes it, which is the one thing
+ * still available this far out.
+ */
+function NotFound() {
+  const locale = useRouterState({
+    select: (state) => parseLocale(state.matches[0]?.context.locale),
+  })
+  const t = translator(locale)
+
+  return (
+    <main>
+      <h1>{t('notFound.title')}</h1>
+      <p>{t('notFound.body')}</p>
+      <Link to="/" className="cta">
+        {t('notFound.home')}
+      </Link>
+    </main>
+  )
+}
 
 /**
  * Anything that depends on route context belongs here rather than in the shell

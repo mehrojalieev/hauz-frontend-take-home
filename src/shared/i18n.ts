@@ -85,6 +85,10 @@ const uz: Dictionary = {
   'profile.loadFailed':
     'Profilingizni hozir yuklay olmadik. Bir ozdan keyin yangilang; siz hali tizimdasiz.',
 
+  'notFound.title': 'Sahifa topilmadi',
+  'notFound.body': 'Bu manzilda hech narsa yo‘q. Havola eskirgan bo‘lishi mumkin.',
+  'notFound.home': 'Bosh sahifaga',
+
   'error.rate_limited': 'Urinishlar juda ko‘p. Bir daqiqa kutib qayta urining.',
   'error.invalid_code': 'Kod noto‘g‘ri yoki muddati o‘tgan.',
   'error.expired': 'Kod muddati o‘tdi. Yangisini olish uchun emailni kiriting.',
@@ -155,6 +159,10 @@ const ru: Dictionary = {
   'profile.loadFailed':
     'Не удалось загрузить профиль. Обновите чуть позже — вы всё ещё в аккаунте.',
 
+  'notFound.title': 'Страница не найдена',
+  'notFound.body': 'По этому адресу ничего нет. Возможно, ссылка устарела.',
+  'notFound.home': 'На главную',
+
   'error.rate_limited': 'Слишком много попыток. Подождите минуту.',
   'error.invalid_code': 'Код неверный или устарел.',
   'error.expired': 'Код устарел. Укажите почту, чтобы получить новый.',
@@ -222,6 +230,10 @@ const en: Dictionary = {
   'profile.saved': 'Saved.',
   'profile.loadFailed':
     'We could not load your profile just now. Reload in a moment; you are still signed in.',
+
+  'notFound.title': 'Page not found',
+  'notFound.body': 'There is nothing at this address. The link may be out of date.',
+  'notFound.home': 'Go home',
 
   'error.rate_limited': 'Too many attempts. Wait a minute and try again.',
   'error.invalid_code': 'That code is wrong or has expired.',

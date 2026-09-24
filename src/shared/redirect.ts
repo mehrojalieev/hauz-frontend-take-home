@@ -18,11 +18,21 @@
  * is treated as a slash by some parsers, a newline can split a header, and
  * `javascript:` does not need a host at all.
  *
- * In production this would be better still as a list of the routes that are
- * worth returning to. There are four of them; the shape check is what stays
- * correct as that grows.
+ * The shape check alone is not the whole answer, and a bug made that concrete:
+ * a checked path is still only a string, and handing a string to the router as
+ * `href` produced a not-found instead of a navigation. So the check ends in a
+ * list of the routes worth returning to. The result is one of two literals,
+ * which means the router can be given `to` and TypeScript verifies the
+ * destination exists.
+ *
+ * `/signin` and `/onboarding` are deliberately not returnable; sending someone
+ * back to where they just came from is a loop, not a courtesy.
  */
-export function safeRedirect(raw: unknown): string {
+const RETURNABLE = ['/', '/profile'] as const
+
+export type ReturnTo = (typeof RETURNABLE)[number]
+
+export function safeRedirect(raw: unknown): ReturnTo {
   if (typeof raw !== 'string' || raw === '') return '/'
 
   // One decode, because `%2F%2Fevil.com` is the same trick wearing a hat. Only
@@ -41,7 +51,10 @@ export function safeRedirect(raw: unknown): string {
   if (path.includes('://')) return '/' // a scheme smuggled past the first check
   if (/[\u0000-\u001f\u007f]/.test(path)) return '/' // control chars, CRLF
 
-  return path
+  // The shape is fine. Now: is it somewhere we actually return people to?
+  const route = path.split(/[?#]/)[0]
+
+  return RETURNABLE.includes(route as ReturnTo) ? (route as ReturnTo) : '/'
 }
 
 /**
@@ -49,7 +62,7 @@ export function safeRedirect(raw: unknown): string {
  * in a query string is noise. `undefined` keeps `?redirect=%2F` off links that
  * have nowhere particular to return to.
  */
-export function redirectParam(raw: unknown): string | undefined {
+export function redirectParam(raw: unknown): ReturnTo | undefined {
   const path = safeRedirect(raw)
   return path === '/' ? undefined : path
 }

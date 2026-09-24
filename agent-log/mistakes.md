@@ -118,6 +118,37 @@ Commit `e821737`.
 
 ---
 
+## 6. Handed the router a string and called it a destination
+
+**What it wrote.** The onboarding guard forwarded people with
+`redirect({ href: next })`, where `next` was a path that had been through
+`safeRedirect`. It typechecked, and a signed-out request to `/profile` answered
+`307 /signin?redirect=%2Fprofile` when tested with curl, so it looked done.
+
+**How I caught it.** By signing in. The code was accepted, nothing moved, and a
+second click said the code had expired. The server log had the reason:
+
+    A notFoundError was encountered on the route with ID "__root__"
+
+The session had been created and the one-time code consumed on the first click;
+the navigation after it never happened. The second click then found no pending
+sign-in cookie, which is exactly what an expired code looks like.
+
+**Why it matters.** Two lessons, and the second is the bigger one. `href` takes
+a string the router has to resolve at runtime, and it resolved to nothing;
+`to` takes a route it knows at build time. And the test I had run only covered
+the server-rendered redirect, which took a different path through the router
+than a client-side navigation did. Green tests, broken flow.
+
+**Fix.** `safeRedirect` no longer returns "a string that looks safe". It ends in
+a list of the routes worth returning to and its type is the union of those two
+literals, so the router gets `to` and TypeScript checks the destination exists.
+`/signin` and `/onboarding` are not in the list, because returning someone to
+where they just came from is a loop. Fifteen cases checked, including the two
+newly excluded routes. Commit `<allowlist>`.
+
+---
+
 <!--
 Still to record as they happen. Likely candidates, based on where this stack is
 easy to get wrong:

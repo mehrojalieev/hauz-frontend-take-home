@@ -20,8 +20,10 @@ the app could not reach it directly if it tried.
 
 **The `redirect` parameter.** Sending people wherever it points is an open
 redirect. `?redirect=https://hauz-uz.com/login` lets someone sign in on the real
-domain and land on a copy asking them to sign in again. Only internal paths are
-honoured; everything else goes home. (`e821737`)
+domain and land on a copy asking them to sign in again. The parameter is now
+matched against a list of the two routes worth returning to, so what reaches
+the router is a known route rather than a string that passed a shape check.
+(`e821737`, tightened in `<allowlist>`)
 
 **Sending the user id with the profile form.** That makes identity something the
 client asserts, and anything asserted can be edited. On a marketplace that is a
@@ -70,6 +72,9 @@ and a dead end for the other two, which now say they are required.
   apply locally and the cookie is written in the background. (`0fbc36a`)
 - Empty string against `null` against absent: eight cases through the patch
   builder, including an emptied required field and a whitespace-only edit.
+- The redirect guard passed a server-rendered test and still broke the client
+  navigation, because `href` is resolved at runtime and `to` is not. Found by
+  signing in, not by testing. Details in `agent-log/mistakes.md`.
 
 ## Past the brief
 
@@ -81,7 +86,6 @@ reader's language.
 
 ## Next, for production
 
-- Replace the redirect shape check with an allowlist of returnable routes.
 - Add a test runner. `buildPatch`, `safeRedirect` and the Function response
   mapping were checked with throwaway scripts; they should be committed tests.
 - Pass the locale to the Function so field-level `issues` arrive translated.

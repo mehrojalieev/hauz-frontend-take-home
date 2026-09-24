@@ -27,9 +27,10 @@ export const Route = createFileRoute('/onboarding')({
     // Already onboarded, so this screen has nothing to ask. Send them on to
     // wherever they were originally headed.
     if (context.viewer.state === 'ready') {
-      // `href`, not `to`: the destination is data, not one of the literal
-      // route paths the router knows at compile time.
-      throw redirect({ href: next })
+      // `to`, because safeRedirect narrows to a route the router knows. This
+      // was `href` and a bare string, which the router answered with a
+      // not-found rather than a navigation.
+      throw redirect({ to: next })
     }
     // `unknown` falls through on purpose. We cannot tell whether they have an
     // account, and the create route is idempotent, so letting them submit is
@@ -60,7 +61,7 @@ function Onboarding() {
     onSuccess: async (outcome) => {
       if (outcome.state === 'ready') {
         await refreshShell(router, queryClient)
-        await router.navigate({ href: next })
+        await router.navigate({ to: next })
         return
       }
 
