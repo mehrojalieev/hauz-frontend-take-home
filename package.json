@@ -12,7 +12,9 @@
     "generate-routes": "tsr generate",
     "typecheck": "tsc --noEmit",
     "appwrite": "appwrite",
-    "appwrite:push": "appwrite push table --all --force && appwrite push function --all --force"
+    "appwrite:push": "appwrite push table --all --force && appwrite push function --all --force",
+    "check:client": "node scripts/check-client-bundle.mjs",
+    "verify": "npm run typecheck && npm run build && npm run check:client"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.103.1",
