@@ -7,10 +7,8 @@ import {
   clearSessionCookie,
   readSessionCookie,
 } from '#/server/cookies'
-import {
-  fetchPersonalAccount,
-  type PersonalAccount,
-} from '#/server/personal-account'
+import { fetchPersonalAccount } from '#/server/personal-account'
+import type { PersonalAccount } from '#/shared/personal-account'
 
 export type CurrentUser = {
   id: string

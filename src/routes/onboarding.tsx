@@ -2,8 +2,8 @@ import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { PERSONAL_ROLES, type PersonalRole } from '#/server/personal-account'
 import { createAccount } from '#/server/profile'
+import { PERSONAL_ROLES, type PersonalRole } from '#/shared/personal-account'
 
 export const Route = createFileRoute('/onboarding')({
   beforeLoad: ({ context }) => {

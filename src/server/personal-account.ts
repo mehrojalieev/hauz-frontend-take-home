@@ -3,6 +3,13 @@ import { z } from 'zod'
 
 import { userClient } from '#/server/appwrite'
 import { readSessionCookie } from '#/server/cookies'
+import type {
+  FieldIssue,
+  PersonalAccount,
+  PersonalRole,
+} from '#/shared/personal-account'
+
+export type { FieldIssue, PersonalAccount, PersonalRole }
 
 /**
  * The only way this app touches profile data. The table itself is unreachable
@@ -24,14 +31,7 @@ import { readSessionCookie } from '#/server/cookies'
  * handling, and they mean different things.
  */
 
-export type PersonalRole = 'property_owner' | 'realtor'
-
-export const PERSONAL_ROLES = [
-  { value: 'property_owner', label: 'Property Owner' },
-  { value: 'realtor', label: 'Realtor' },
-] as const satisfies ReadonlyArray<{ value: PersonalRole; label: string }>
-
-const accountSchema = z.object({
+const accountSchema: z.ZodType<PersonalAccount> = z.object({
   personalAccountId: z.string(),
   firstName: z.string(),
   lastName: z.string(),
@@ -41,10 +41,6 @@ const accountSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
 })
-
-export type PersonalAccount = z.infer<typeof accountSchema>
-
-export type FieldIssue = { field: string; message: string }
 
 const errorSchema = z.object({
   error: z.string(),
