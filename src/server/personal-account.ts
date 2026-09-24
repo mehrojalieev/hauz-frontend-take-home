@@ -6,10 +6,11 @@ import { readSessionCookie } from '#/server/cookies'
 import type {
   FieldIssue,
   PersonalAccount,
+  PersonalAccountPatch,
   PersonalRole,
 } from '#/shared/personal-account'
 
-export type { FieldIssue, PersonalAccount, PersonalRole }
+export type { FieldIssue, PersonalAccount, PersonalAccountPatch, PersonalRole }
 
 /**
  * The only way this app touches profile data. The table itself is unreachable
@@ -200,18 +201,6 @@ export type UpdateOutcome =
   | { state: 'not-onboarded' }
   | { state: 'signed-out' }
   | { state: 'unavailable' }
-
-/**
- * `null` clears a field, an absent key leaves it alone. Role is not here and
- * cannot be: it is absent from the Function's update schema too, so an account
- * keeps the role it was created with.
- */
-export type PersonalAccountPatch = {
-  firstName?: string
-  lastName?: string
-  contactEmail?: string | null
-  bio?: string | null
-}
 
 export async function updatePersonalAccount(
   patch: PersonalAccountPatch,

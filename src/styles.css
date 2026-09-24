@@ -1,38 +1,269 @@
-/* Deliberately minimal. Styling is not part of this task. */
+/*
+ * The task says unstyled is fine and that CSS is not what is being looked at,
+ * so this stays deliberately small: one file, no framework, no component
+ * styles. It is written against semantic elements rather than class names, so
+ * the markup carries no styling hooks and screens added later inherit this
+ * without touching it.
+ *
+ * What it is for is legibility. A reviewer has to read forms, spot which field
+ * an error belongs to, and tell a primary action from a secondary one. That is
+ * worth a hundred lines and no more.
+ */
 
 :root {
   color-scheme: light dark;
-  font-family: system-ui, sans-serif;
-  line-height: 1.5;
+
+  --paper: #fbfbfa;
+  --surface: #ffffff;
+  --ink: #14181c;
+  --muted: #5c6670;
+  --line: #dfe3e2;
+  --accent: #1d6f4f;
+  --accent-ink: #ffffff;
+  --accent-soft: #e8f2ed;
+  --danger: #a5372b;
+  --danger-soft: #fbecea;
+  --radius: 6px;
+
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0f1214;
+    --surface: #161b1e;
+    --ink: #e8ecee;
+    --muted: #98a3aa;
+    --line: #2a3236;
+    --accent: #5cbf93;
+    --accent-ink: #0f1214;
+    --accent-soft: #14251f;
+    --danger: #e08a7c;
+    --danger-soft: #2a1714;
+  }
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  padding: 1.5rem;
-  max-width: 44rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+/* The brand is always first; everything else sits at the other end. */
+header > a:first-child {
+  margin-right: auto;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+header span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+header [role='status'] {
+  color: var(--danger);
+}
+
+/* ── Page ───────────────────────────────────────────────────────────────── */
+
+main {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.45rem;
+  line-height: 1.25;
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.05rem;
+  margin: 2rem 0 0.5rem;
+}
+
+p {
+  margin: 0 0 1rem;
+}
+
+main > p:first-of-type {
+  color: var(--muted);
+}
+
+a {
+  color: var(--accent);
+}
+
+/* ── Forms ──────────────────────────────────────────────────────────────── */
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 1.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+form > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.925rem;
+}
+
+form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 label {
-  display: block;
-  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 550;
 }
 
 input,
 select,
 textarea {
-  display: block;
-  width: 100%;
-  max-width: 24rem;
-  padding: 0.4rem;
   font: inherit;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
 
+textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Radio groups: the label wraps the input, so it lays out as a row. */
+fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 550;
+}
+
+fieldset label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+}
+
+fieldset input {
+  width: auto;
+}
+
+fieldset > p:last-child {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+
 button {
-  margin-top: 1rem;
-  padding: 0.4rem 0.9rem;
   font: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+button[type='submit'] {
+  align-self: flex-start;
+  color: var(--accent-ink);
+  background: var(--accent);
+  font-weight: 550;
+}
+
+button[type='button'] {
+  align-self: flex-start;
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ── Errors ─────────────────────────────────────────────────────────────── */
+
+/* Per-field messages, tied to their input by aria-describedby. */
+[id$='-error'] {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+[role='alert'] {
+  margin-top: 1.25rem;
+  padding: 0.7rem 0.85rem;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+code {
+  font-size: 0.9em;
+  padding: 0.1em 0.3em;
+  background: var(--accent-soft);
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

@@ -3,7 +3,9 @@ import { z } from 'zod'
 
 import {
   createPersonalAccount,
+  updatePersonalAccount,
   type CreateOutcome,
+  type UpdateOutcome,
 } from '#/server/personal-account'
 
 /**
@@ -31,3 +33,28 @@ const onboardingInput = z.object({
 export const createAccount = createServerFn({ method: 'POST' })
   .validator((data: unknown) => onboardingInput.parse(data))
   .handler(async ({ data }): Promise<CreateOutcome> => createPersonalAccount(data))
+
+/**
+ * The same three-state shape the Function uses: an absent key leaves a value
+ * alone, `null` clears it, a value stores it. `""` is deliberately not
+ * accepted, so an emptied field has to arrive as an explicit `null` rather than
+ * quietly becoming an empty string in the table.
+ *
+ * This mirrors the Function's own schema on purpose. It is not a substitute for
+ * it, the Function still validates everything, but rejecting a bad patch here
+ * saves a round trip and an execution.
+ */
+const patchInput = z
+  .object({
+    firstName: z.string().trim().min(1).max(100).optional(),
+    lastName: z.string().trim().min(1).max(100).optional(),
+    contactEmail: z.email().max(254).nullable().optional(),
+    bio: z.string().trim().min(1).max(2000).nullable().optional(),
+  })
+  .refine((fields) => Object.keys(fields).length > 0, {
+    message: 'Nothing has changed.',
+  })
+
+export const saveProfile = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => patchInput.parse(data))
+  .handler(async ({ data }): Promise<UpdateOutcome> => updatePersonalAccount(data))
