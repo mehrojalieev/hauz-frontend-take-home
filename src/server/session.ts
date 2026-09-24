@@ -7,6 +7,10 @@ import {
   clearSessionCookie,
   readSessionCookie,
 } from '#/server/cookies'
+import {
+  fetchPersonalAccount,
+  type PersonalAccount,
+} from '#/server/personal-account'
 
 export type CurrentUser = {
   id: string
@@ -14,58 +18,99 @@ export type CurrentUser = {
 }
 
 /**
- * Three states, not two. "We could not find out" is a real answer and it is not
- * the same as "signed out".
+ * Who is looking at this page, in the four shapes the app actually branches on.
+ *
+ * `unknown` earns its place. "We could not find out" is not the same as "signed
+ * out", and collapsing the two is what the brief asks for and what this refuses
+ * to do; see the note on the lookup below.
  */
-export type AuthState =
+export type Viewer =
+  | { state: 'signed-out' }
+  | { state: 'unknown' }
+  /** Signed in, but there is no Personal Account yet. */
+  | { state: 'onboarding'; user: CurrentUser }
+  | { state: 'ready'; user: CurrentUser; account: PersonalAccount }
+
+type Resolved =
   | { status: 'signed-out' }
-  | { status: 'signed-in'; user: CurrentUser }
   | { status: 'unknown' }
+  | { status: 'signed-in'; user: CurrentUser }
 
 /**
- * Resolves who is signed in, on the server, before the first byte of HTML.
- *
  * The brief says that if this fails for any reason the person should be treated
- * as signed out and the cookie deleted. Followed literally that is a reliability
- * bug, not a safety measure: "any reason" covers a timeout, a 502 during a
- * deploy, a 429 from a rate limit. None of those mean the session is invalid,
- * and acting as if they did would turn a few seconds of Appwrite being unwell
- * into a forced sign-out for every person holding a valid session, each of whom
- * then has to go and find a six digit code in their inbox.
+ * as signed out and the cookie deleted. Followed literally that is a
+ * reliability bug rather than a safety measure: "any reason" covers a timeout,
+ * a 502 mid-deploy, a 429 from a rate limit, and none of those say the session
+ * went bad. Acting as though they did would turn a few seconds of Appwrite
+ * being unwell into a forced sign-out for everyone holding a valid session,
+ * each of whom then has to go dig a six digit code out of their inbox.
  *
- * So only 401 and 403 clear the cookie, because only those actually say the
- * session is no longer good. Anything else returns `unknown`, which keeps the
- * session intact and lets the header say nothing rather than say something
- * false.
+ * Only 401 and 403 clear the cookie, because only those actually say the
+ * session is no longer good.
  */
-export const getCurrentUser = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<AuthState> => {
-    const secret = readSessionCookie()
+async function resolveCurrentUser(): Promise<Resolved> {
+  const secret = readSessionCookie()
 
-    if (!secret) {
+  if (!secret) {
+    return { status: 'signed-out' }
+  }
+
+  try {
+    const me = await new Account(userClient(secret)).get()
+
+    // Built by hand. Returning the Appwrite user wholesale would serialize
+    // every field it carries into the SSR payload, where the page source can be
+    // read by anyone the HTML reaches.
+    return { status: 'signed-in', user: { id: me.$id, email: me.email } }
+  } catch (error) {
+    const invalidSession =
+      error instanceof AppwriteException &&
+      (error.code === 401 || error.code === 403)
+
+    if (invalidSession) {
+      clearSessionCookie()
       return { status: 'signed-out' }
     }
 
-    try {
-      const me = await new Account(userClient(secret)).get()
+    console.error('[current-user]', error)
 
-      // Built by hand. Returning the Appwrite user wholesale would serialize
-      // every field it carries into the SSR payload, where the page source can
-      // be read by anyone the HTML reaches.
-      return { status: 'signed-in', user: { id: me.$id, email: me.email } }
-    } catch (error) {
-      const invalidSession =
-        error instanceof AppwriteException &&
-        (error.code === 401 || error.code === 403)
+    return { status: 'unknown' }
+  }
+}
 
-      if (invalidSession) {
+/**
+ * One call, both answers. The root route needs the person and their account on
+ * every render, and asking for them separately would cost two round trips from
+ * the browser on each navigation. The Function is only asked once somebody is
+ * actually signed in, so a signed-out visit costs nothing.
+ */
+export const loadViewer = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<Viewer> => {
+    const resolved = await resolveCurrentUser()
+
+    if (resolved.status !== 'signed-in') {
+      return { state: resolved.status === 'unknown' ? 'unknown' : 'signed-out' }
+    }
+
+    const outcome = await fetchPersonalAccount()
+
+    switch (outcome.state) {
+      case 'found':
+        return { state: 'ready', user: resolved.user, account: outcome.account }
+
+      // Not a failure. It is how the Function says this person has not
+      // onboarded, which is a normal place to be.
+      case 'not-onboarded':
+        return { state: 'onboarding', user: resolved.user }
+
+      // The account lookup disagrees with the one above, which means the
+      // session lapsed between the two calls. Believe the later answer.
+      case 'signed-out':
         clearSessionCookie()
-        return { status: 'signed-out' }
-      }
+        return { state: 'signed-out' }
 
-      console.error('[current-user]', error)
-
-      return { status: 'unknown' }
+      default:
+        return { state: 'unknown' }
     }
   },
 )

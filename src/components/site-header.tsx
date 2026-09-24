@@ -4,13 +4,13 @@ import { useState } from 'react'
 import { signOut } from '#/server/session'
 
 /**
- * Reads the auth state the root route resolved during SSR, so this renders
+ * Reads the viewer the root route resolved during SSR, so this renders
  * correctly in the very first HTML rather than after hydration. Fetching in an
  * effect would paint "Sign in" first and correct it a moment later, which is
  * the flash the brief rules out.
  */
 export function SiteHeader() {
-  const { auth } = useRouteContext({ from: '__root__' })
+  const { viewer } = useRouteContext({ from: '__root__' })
   const router = useRouter()
   const [leaving, setLeaving] = useState(false)
 
@@ -29,27 +29,43 @@ export function SiteHeader() {
     }
   }
 
+  const logOut = (
+    <button type="button" onClick={handleSignOut} disabled={leaving}>
+      {leaving ? 'Logging out…' : 'Log out'}
+    </button>
+  )
+
   return (
     <header>
       <Link to="/">HAUZ</Link>
 
-      {auth.status === 'signed-in' && (
+      {viewer.state === 'ready' && (
         <>
-          <span>{auth.user.email}</span>
-          <button type="button" onClick={handleSignOut} disabled={leaving}>
-            {leaving ? 'Logging out…' : 'Log out'}
-          </button>
+          <span>{viewer.account.firstName}</span>
+          {logOut}
         </>
       )}
 
-      {auth.status === 'signed-out' && <Link to="/signin">Sign in</Link>}
+      {/*
+        Signed in, but they have not told us their name yet. Falling back to the
+        address they signed in with beats an empty space, and the way out still
+        has to be there.
+      */}
+      {viewer.state === 'onboarding' && (
+        <>
+          <span>{viewer.user.email}</span>
+          {logOut}
+        </>
+      )}
+
+      {viewer.state === 'signed-out' && <Link to="/signin">Sign in</Link>}
 
       {/*
         We asked and did not get an answer. Offering "Sign in" here would be a
         guess, and a wrong guess costs somebody a session they still have, so
         say only what is true.
       */}
-      {auth.status === 'unknown' && (
+      {viewer.state === 'unknown' && (
         <span role="status">Sign-in state unavailable</span>
       )}
     </header>

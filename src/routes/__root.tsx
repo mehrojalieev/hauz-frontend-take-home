@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-router'
 
 import { SiteHeader } from '#/components/site-header'
-import { getCurrentUser } from '#/server/session'
+import { loadViewer } from '#/server/session'
 import appCss from '../styles.css?url'
 
 export interface RouterContext {
@@ -32,7 +32,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   // exists. That is what makes the header right on the first paint instead of
   // corrected after hydration. Every child route reads this same value, so no
   // two parts of the page can disagree about who is signed in.
-  beforeLoad: async () => ({ auth: await getCurrentUser() }),
+  beforeLoad: async () => ({ viewer: await loadViewer() }),
 
   component: RootLayout,
   shellComponent: RootDocument,
