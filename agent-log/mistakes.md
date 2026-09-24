@@ -46,6 +46,48 @@ retrying with a fresh email is tracked; the result goes in NOTES.md.
 
 ---
 
+## 3. Pulled the server SDK into the browser bundle
+
+**What it wrote.** The onboarding route imported `PERSONAL_ROLES`, an ordinary
+constant, from `#/server/personal-account`. That module imports `node-appwrite`.
+
+**How I caught it.** The page threw `Cannot read properties of undefined
+(reading 'node')` on navigation. The dev server log showed why: `node-appwrite`
+was being evaluated in the browser, alongside warnings that `node:http` and
+`node:buffer` had been externalized for browser compatibility.
+
+**Why it matters.** This breaks the first rule of the task. TanStack Start
+replaces a `createServerFn` export with an RPC stub, so importing one is safe,
+but importing *any* ordinary value from the same module drags the whole module
+in. The two look identical at the import site. No key was actually inlined, but
+the boundary the rule depends on was gone, and only a runtime crash revealed it.
+
+Worth noting: `npm run build` fails outright on this, so it could only ship
+broken, never silently. It appeared in dev alone.
+
+**Fix.** Everything a component needs moved to `src/shared/personal-account.ts`,
+which imports nothing from the server. Commit `e6e8c08`.
+
+---
+
+## 4. Wrote a check that passed on nothing
+
+**What it wrote.** A script to fail the build if server-only code reached the
+client bundle, added right after mistake 3.
+
+**How I caught it.** I put the bug back to see the check fail. It printed
+`0 client files carry nothing server-only` and exited 0. The build had failed,
+so `dist/client` was empty, and the check read an empty directory as a pass.
+
+**Why it matters.** A green check that cannot go red is worse than no check: it
+gets trusted. The failure mode is exactly when something is wrong, since that is
+when the build is most likely to have produced nothing.
+
+**Fix.** The check now fails when it finds nothing to scan. Both paths tested:
+empty directory exits 1, real bundle exits 0. Commit `5ac55eb`.
+
+---
+
 <!--
 Still to record as they happen. Likely candidates, based on where this stack is
 easy to get wrong:
