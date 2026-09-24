@@ -145,7 +145,7 @@ a list of the routes worth returning to and its type is the union of those two
 literals, so the router gets `to` and TypeScript checks the destination exists.
 `/signin` and `/onboarding` are not in the list, because returning someone to
 where they just came from is a loop. Fifteen cases checked, including the two
-newly excluded routes. Commit `<allowlist>`.
+newly excluded routes. Commit `c0aeaa7`.
 
 ---
 

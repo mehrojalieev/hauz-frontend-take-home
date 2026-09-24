@@ -23,7 +23,7 @@ redirect. `?redirect=https://hauz-uz.com/login` lets someone sign in on the real
 domain and land on a copy asking them to sign in again. The parameter is now
 matched against a list of the two routes worth returning to, so what reaches
 the router is a known route rather than a string that passed a shape check.
-(`e821737`, tightened in `<allowlist>`)
+(`e821737`, tightened in `c0aeaa7`)
 
 **Sending the user id with the profile form.** That makes identity something the
 client asserts, and anything asserted can be edited. On a marketplace that is a
