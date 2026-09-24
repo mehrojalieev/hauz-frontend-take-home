@@ -55,7 +55,10 @@ function SignIn() {
       // rendered with. Re-run the root beforeLoad before navigating, or the
       // next screen renders as though nobody signed in.
       await router.invalidate()
-      await router.navigate({ to: '/' })
+      // Always onboarding. Its own guard sends people who already have an
+      // account straight on, so there is one destination here instead of a
+      // second lookup to decide between two.
+      await router.navigate({ to: '/onboarding' })
     },
   })
 
