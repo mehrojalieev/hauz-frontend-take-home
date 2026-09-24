@@ -3,6 +3,7 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { createAccount } from '#/server/profile'
+import { translator } from '#/shared/i18n'
 import { PERSONAL_ROLES, type PersonalRole } from '#/shared/personal-account'
 import { redirectParam, safeRedirect } from '#/shared/redirect'
 
@@ -37,6 +38,8 @@ export const Route = createFileRoute('/onboarding')({
 
 function Onboarding() {
   const router = useRouter()
+  const { locale } = Route.useRouteContext()
+  const t = translator(locale)
   // Cleaned here too. beforeLoad cleaning it does not clean what this reads.
   const next = safeRedirect(Route.useSearch().redirect)
 
@@ -60,7 +63,7 @@ function Onboarding() {
       }
 
       if (outcome.state === 'invalid') {
-        setError(outcome.message)
+        setError(t('error.invalid'))
         setIssues(
           Object.fromEntries(outcome.issues.map((i) => [i.field, i.message])),
         )
@@ -75,9 +78,11 @@ function Onboarding() {
 
       setIssues({})
       setError(
-        outcome.state === 'role-conflict'
-          ? outcome.message
-          : 'That did not work. Try again.',
+        t(
+          outcome.state === 'role-conflict'
+            ? 'error.role_conflict'
+            : 'error.unavailable',
+        ),
       )
     },
   })
@@ -103,12 +108,12 @@ function Onboarding() {
 
   return (
     <main>
-      <h1>Tell us who you are</h1>
-      <p>You need this before you can use HAUZ.</p>
+      <h1>{t('onboarding.title')}</h1>
+      <p>{t('onboarding.intro')}</p>
 
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="firstName">First name</label>
+          <label htmlFor="firstName">{t('onboarding.firstName')}</label>
           <input
             id="firstName"
             name="firstName"
@@ -123,7 +128,7 @@ function Onboarding() {
         </div>
 
         <div>
-          <label htmlFor="lastName">Last name</label>
+          <label htmlFor="lastName">{t('onboarding.lastName')}</label>
           <input
             id="lastName"
             name="lastName"
@@ -138,7 +143,7 @@ function Onboarding() {
         </div>
 
         <fieldset>
-          <legend>I am a</legend>
+          <legend>{t('onboarding.roleLegend')}</legend>
           {PERSONAL_ROLES.map((option) => (
             <label key={option.value} htmlFor={`role-${option.value}`}>
               <input
@@ -150,7 +155,7 @@ function Onboarding() {
                 checked={role === option.value}
                 onChange={() => setRole(option.value)}
               />
-              {option.label}
+              {t(`onboarding.role.${option.value}`)}
             </label>
           ))}
           {issues.role && <p>{issues.role}</p>}
@@ -158,11 +163,11 @@ function Onboarding() {
             Chosen once and kept. The Function has no way to change a role
             afterwards, so this is the only screen that ever asks.
           */}
-          <p>You cannot change this later.</p>
+          <p>{t('onboarding.roleWarning')}</p>
         </fieldset>
 
         <button type="submit" disabled={submit.isPending}>
-          {submit.isPending ? 'Saving…' : 'Continue'}
+          {submit.isPending ? t('onboarding.saving') : t('onboarding.continue')}
         </button>
       </form>
 

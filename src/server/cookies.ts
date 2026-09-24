@@ -91,3 +91,29 @@ export function readPendingSignInCookie() {
 export function clearPendingSignInCookie() {
   deleteCookie(named(PENDING_SIGN_IN), options(0))
 }
+
+/**
+ * Preferences. Not secrets, but written here so there is one place cookies are
+ * set, and read on the server so both are settled before the first byte of
+ * HTML. That is the same trick the header uses, and it is what rules out a
+ * flash of the wrong palette or the wrong language on a hard refresh.
+ */
+const THEME = 'hauz_theme'
+const LOCALE = 'hauz_locale'
+const PREFERENCE_MAX_AGE = 365 * 24 * 60 * 60
+
+export function writeThemeCookie(theme: string) {
+  setCookie(named(THEME), theme, options(PREFERENCE_MAX_AGE))
+}
+
+export function readThemeCookie() {
+  return getCookie(named(THEME))
+}
+
+export function writeLocaleCookie(locale: string) {
+  setCookie(named(LOCALE), locale, options(PREFERENCE_MAX_AGE))
+}
+
+export function readLocaleCookie() {
+  return getCookie(named(LOCALE))
+}

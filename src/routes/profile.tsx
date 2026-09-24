@@ -3,6 +3,7 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { saveProfile } from '#/server/profile'
+import { translator, type Locale } from '#/shared/i18n'
 import { redirectParam } from '#/shared/redirect'
 import {
   buildPatch,
@@ -32,7 +33,8 @@ export const Route = createFileRoute('/profile')({
 })
 
 function Profile() {
-  const { viewer } = Route.useRouteContext()
+  const { viewer, locale } = Route.useRouteContext()
+  const t = translator(locale)
 
   if (viewer.state !== 'ready') {
     // Only reachable when the viewer is `unknown`: signed-out and onboarding
@@ -40,20 +42,24 @@ function Profile() {
     // we will not pretend they are signed out to get out of saying so.
     return (
       <main>
-        <h1>Profile</h1>
-        <p role="alert">
-          We could not load your profile just now. Reload in a moment; you are
-          still signed in.
-        </p>
+        <h1>{t('profile.title')}</h1>
+        <p role="alert">{t('profile.loadFailed')}</p>
       </main>
     )
   }
 
-  return <ProfileForm account={viewer.account} />
+  return <ProfileForm account={viewer.account} locale={locale} />
 }
 
-function ProfileForm({ account }: { account: PersonalAccount }) {
+function ProfileForm({
+  account,
+  locale,
+}: {
+  account: PersonalAccount
+  locale: Locale
+}) {
   const router = useRouter()
+  const t = translator(locale)
 
   // What was loaded. Every decision about what to send is made against this,
   // which is the only way to tell "left alone" from "cleared".
@@ -87,7 +93,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
       setSaved(false)
 
       if (outcome.state === 'invalid') {
-        setError(outcome.message)
+        setError(t('error.invalid'))
         setIssues(
           Object.fromEntries(outcome.issues.map((i) => [i.field, i.message])),
         )
@@ -103,9 +109,11 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
       }
 
       setError(
-        outcome.state === 'not-onboarded'
-          ? 'Your profile is gone. Sign in again to set it up.'
-          : 'That did not save. Try again.',
+        t(
+          outcome.state === 'not-onboarded'
+            ? 'error.not_onboarded'
+            : 'error.unavailable',
+        ),
       )
     },
   })
@@ -119,8 +127,8 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
 
   return (
     <main>
-      <h1>Your profile</h1>
-      <p>This is what other people on HAUZ see.</p>
+      <h1>{t('profile.title')}</h1>
+      <p>{t('profile.intro')}</p>
 
       <form
         onSubmit={(event) => {
@@ -134,7 +142,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
         }}
       >
         <div>
-          <label htmlFor="firstName">First name</label>
+          <label htmlFor="firstName">{t('onboarding.firstName')}</label>
           <input
             id="firstName"
             name="firstName"
@@ -149,7 +157,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
         </div>
 
         <div>
-          <label htmlFor="lastName">Last name</label>
+          <label htmlFor="lastName">{t('onboarding.lastName')}</label>
           <input
             id="lastName"
             name="lastName"
@@ -164,7 +172,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
         </div>
 
         <div>
-          <label htmlFor="contactEmail">Contact email</label>
+          <label htmlFor="contactEmail">{t('profile.contactEmail')}</label>
           <input
             id="contactEmail"
             name="contactEmail"
@@ -180,15 +188,12 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
           {issues.contactEmail ? (
             <p id="contactEmail-error">{issues.contactEmail}</p>
           ) : (
-            <p id="contactEmail-hint">
-              Optional, and not the address you sign in with. Empty it to remove
-              it.
-            </p>
+            <p id="contactEmail-hint">{t('profile.contactEmailHint')}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="bio">Bio</label>
+          <label htmlFor="bio">{t('profile.bio')}</label>
           <textarea
             id="bio"
             name="bio"
@@ -200,23 +205,27 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
           {issues.bio ? (
             <p id="bio-error">{issues.bio}</p>
           ) : (
-            <p id="bio-hint">Optional. Empty it to remove it.</p>
+            <p id="bio-hint">{t('profile.bioHint')}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="role">Role</label>
-          <input id="role" value={role?.label ?? account.role} disabled />
+          <label htmlFor="role">{t('profile.role')}</label>
+          <input
+            id="role"
+            value={role ? t(`onboarding.role.${role.value}`) : account.role}
+            disabled
+          />
           {/*
             Shown, never edited. A role is chosen once at onboarding and the
             Function's update schema has no field for it, so an input that
             looked editable would be lying.
           */}
-          <p id="role-hint">Set when you joined and cannot be changed.</p>
+          <p id="role-hint">{t('profile.roleHint')}</p>
         </div>
 
         <button type="submit" disabled={save.isPending || !changed}>
-          {save.isPending ? 'Saving…' : 'Save changes'}
+          {save.isPending ? t('profile.saving') : t('profile.save')}
         </button>
       </form>
 
@@ -226,7 +235,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
         </p>
       )}
 
-      {saved && !changed && <p role="status">Saved.</p>}
+      {saved && !changed && <p role="status">{t('profile.saved')}</p>}
     </main>
   )
 }

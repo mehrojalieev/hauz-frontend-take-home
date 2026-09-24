@@ -4,10 +4,11 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
+  useRouterState,
 } from '@tanstack/react-router'
 
 import { SiteHeader } from '#/components/site-header'
-import { loadViewer } from '#/server/session'
+import { loadShell } from '#/server/session'
 import appCss from '../styles.css?url'
 
 export interface RouterContext {
@@ -22,9 +23,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { title: 'HAUZ' },
     ],
     links: [
-      // Loaded at runtime, not at build time, so a slow or blocked font host
-      // delays glyphs and nothing else. Both families have a real fallback
-      // stack in the stylesheet.
+      // One family, loaded at runtime rather than at build time, so a slow or
+      // blocked font host costs glyphs and nothing else. There is a real
+      // fallback stack in the stylesheet.
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       {
         rel: 'preconnect',
@@ -33,7 +34,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap',
       },
       { rel: 'stylesheet', href: appCss },
     ],
@@ -44,10 +45,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   headers: () => ({ 'Cache-Control': 'private, no-store' }),
 
   // Runs on the server while the page is being rendered, before any HTML
-  // exists. That is what makes the header right on the first paint instead of
-  // corrected after hydration. Every child route reads this same value, so no
-  // two parts of the page can disagree about who is signed in.
-  beforeLoad: async () => ({ viewer: await loadViewer() }),
+  // exists. That is what makes both the header and the palette right on the
+  // first paint rather than corrected after hydration. Every child route reads
+  // this same value, so no two parts of the page can disagree.
+  beforeLoad: async () => await loadShell(),
 
   component: RootLayout,
   shellComponent: RootDocument,
@@ -68,8 +69,28 @@ function RootLayout() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  // Read off the router state rather than with useRouteContext, because the
+  // shell also wraps the error and not-found components, and those render in
+  // situations where the root context may never have been produced. Missing
+  // values fall back to the device's own palette and the default language,
+  // which beats the error page failing to render at all.
+  const preferences = useRouterState({
+    select: (state) => ({
+      theme: state.matches[0]?.context.theme,
+      locale: state.matches[0]?.context.locale,
+    }),
+  })
+
   return (
-    <html lang="en">
+    // Only an explicit choice is stamped. Leaving the attribute off for
+    // `system` is what lets prefers-color-scheme decide, which is the point of
+    // having three states rather than a boolean.
+    <html
+      lang={preferences.locale ?? 'uz'}
+      data-theme={
+        preferences.theme === 'system' ? undefined : preferences.theme
+      }
+    >
       <head>
         <HeadContent />
       </head>

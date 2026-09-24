@@ -5,10 +5,14 @@ import { userClient } from '#/server/appwrite'
 import {
   clearPendingSignInCookie,
   clearSessionCookie,
+  readLocaleCookie,
   readSessionCookie,
+  readThemeCookie,
 } from '#/server/cookies'
 import { fetchPersonalAccount } from '#/server/personal-account'
 import type { PersonalAccount } from '#/shared/personal-account'
+import { parseLocale, type Locale } from '#/shared/i18n'
+import { parseTheme, type Theme } from '#/shared/theme'
 
 export type CurrentUser = {
   id: string
@@ -76,42 +80,61 @@ async function resolveCurrentUser(): Promise<Resolved> {
   }
 }
 
+/** Everything the page shell needs from the server, in one round trip. */
+export type Shell = {
+  viewer: Viewer
+  theme: Theme
+  locale: Locale
+}
+
 /**
- * One call, both answers. The root route needs the person and their account on
- * every render, and asking for them separately would cost two round trips from
- * the browser on each navigation. The Function is only asked once somebody is
- * actually signed in, so a signed-out visit costs nothing.
+ * One call, every answer. The root route needs the person, their account, the
+ * theme and the language on every render; asking separately would cost a round
+ * trip each on every navigation. The Function is only reached once somebody is
+ * actually signed in, so a signed-out visit still costs nothing.
+ *
+ * Resolving the preferences here rather than in the browser is what keeps a
+ * hard refresh from flashing the wrong palette or the wrong language: both are
+ * already on the document in the first HTML, for the same reason the header
+ * already knows who is signed in.
  */
-export const loadViewer = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<Viewer> => {
-    const resolved = await resolveCurrentUser()
-
-    if (resolved.status !== 'signed-in') {
-      return { state: resolved.status === 'unknown' ? 'unknown' : 'signed-out' }
-    }
-
-    const outcome = await fetchPersonalAccount()
-
-    switch (outcome.state) {
-      case 'found':
-        return { state: 'ready', user: resolved.user, account: outcome.account }
-
-      // Not a failure. It is how the Function says this person has not
-      // onboarded, which is a normal place to be.
-      case 'not-onboarded':
-        return { state: 'onboarding', user: resolved.user }
-
-      // The account lookup disagrees with the one above, which means the
-      // session lapsed between the two calls. Believe the later answer.
-      case 'signed-out':
-        clearSessionCookie()
-        return { state: 'signed-out' }
-
-      default:
-        return { state: 'unknown' }
-    }
+export const loadShell = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<Shell> => {
+    const theme = parseTheme(readThemeCookie())
+    const locale = parseLocale(readLocaleCookie())
+    const viewer = await resolveViewer()
+    return { viewer, theme, locale }
   },
 )
+
+async function resolveViewer(): Promise<Viewer> {
+  const resolved = await resolveCurrentUser()
+
+  if (resolved.status !== 'signed-in') {
+    return { state: resolved.status === 'unknown' ? 'unknown' : 'signed-out' }
+  }
+
+  const outcome = await fetchPersonalAccount()
+
+  switch (outcome.state) {
+    case 'found':
+      return { state: 'ready', user: resolved.user, account: outcome.account }
+
+    // Not a failure. It is how the Function says this person has not
+    // onboarded, which is a normal place to be.
+    case 'not-onboarded':
+      return { state: 'onboarding', user: resolved.user }
+
+    // The account lookup disagrees with the one above, which means the
+    // session lapsed between the two calls. Believe the later answer.
+    case 'signed-out':
+      clearSessionCookie()
+      return { state: 'signed-out' }
+
+    default:
+      return { state: 'unknown' }
+  }
+}
 
 /**
  * Signing out has to happen in two places. Dropping the cookie alone leaves the

@@ -3,6 +3,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { requestSignInCode, verifySignInCode } from '#/server/auth'
+import { translator } from '#/shared/i18n'
 import { redirectParam, safeRedirect } from '#/shared/redirect'
 
 export const Route = createFileRoute('/signin')({
@@ -27,6 +28,8 @@ export const Route = createFileRoute('/signin')({
  */
 function SignIn() {
   const router = useRouter()
+  const { locale } = Route.useRouteContext()
+  const t = translator(locale)
   // Cleaned on the way out of the URL, never trusted as read.
   const next = safeRedirect(Route.useSearch().redirect)
 
@@ -40,7 +43,7 @@ function SignIn() {
       requestSignInCode({ data: { email: address } }),
     onSuccess: (result, address) => {
       if (!result.ok) {
-        setError(result.message)
+        setError(t(`error.${result.code}`))
         return
       }
       setError(null)
@@ -53,7 +56,7 @@ function SignIn() {
     mutationFn: (entered: string) => verifySignInCode({ data: { code: entered } }),
     onSuccess: async (result) => {
       if (!result.ok) {
-        setError(result.message)
+        setError(t(`error.${result.code}`))
         // The parked user id is gone, so there is nothing left to redeem.
         // Send them back to the start rather than leaving them typing into a
         // step that can no longer succeed.
@@ -78,7 +81,7 @@ function SignIn() {
 
   return (
     <main>
-      <h1>Sign in</h1>
+      <h1>{t('signin.title')}</h1>
 
       {sentTo === null ? (
         <form
@@ -89,9 +92,9 @@ function SignIn() {
             request.mutate(email)
           }}
         >
-          <p>Enter your email and we will send you a six digit code.</p>
+          <p>{t('signin.intro')}</p>
 
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('signin.email')}</label>
           <input
             id="email"
             name="email"
@@ -103,7 +106,7 @@ function SignIn() {
           />
 
           <button type="submit" disabled={busy}>
-            {request.isPending ? 'Sending…' : 'Send code'}
+            {request.isPending ? t('signin.sending') : t('signin.send')}
           </button>
         </form>
       ) : (
@@ -115,12 +118,9 @@ function SignIn() {
             verify.mutate(code)
           }}
         >
-          <p>
-            We sent a code to <strong>{sentTo}</strong>. It is good for 15
-            minutes.
-          </p>
+          <p>{t('signin.sentTo', { email: sentTo })}</p>
 
-          <label htmlFor="code">Six digit code</label>
+          <label htmlFor="code">{t('signin.code')}</label>
           <input
             id="code"
             name="code"
@@ -134,7 +134,7 @@ function SignIn() {
           />
 
           <button type="submit" disabled={busy}>
-            {verify.isPending ? 'Checking…' : 'Continue'}
+            {verify.isPending ? t('signin.checking') : t('signin.continue')}
           </button>
 
           <button
@@ -146,7 +146,7 @@ function SignIn() {
               setSentTo(null)
             }}
           >
-            Use a different email
+            {t('signin.otherEmail')}
           </button>
         </form>
       )}

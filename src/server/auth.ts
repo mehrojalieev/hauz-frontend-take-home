@@ -30,43 +30,33 @@ import {
  * `sessions.write`.
  */
 
-/** Everything these functions return is safe to serialize to the browser. */
-type Failure = {
-  ok: false
-  code: 'rate_limited' | 'invalid_code' | 'expired' | 'unavailable'
-  message: string
-}
+/**
+ * A code, not a sentence.
+ *
+ * Appwrite's own error text is never forwarded: it is written for developers
+ * and can describe internals. But the wording is not decided here either,
+ * because the person reading it has chosen a language and the server does not
+ * own that choice. These functions say what went wrong and the browser says it
+ * in Uzbek, Russian or English.
+ */
+type FailureCode = 'rate_limited' | 'invalid_code' | 'expired' | 'unavailable'
+
+type Failure = { ok: false; code: FailureCode }
 
 type Success = { ok: true }
 
-const fail = (code: Failure['code'], message: string): Failure => ({
-  ok: false,
-  code,
-  message,
-})
+const fail = (code: FailureCode): Failure => ({ ok: false, code })
 
-/**
- * Appwrite's own error text is not passed through. It is written for developers
- * and can describe internals; these messages are written for the person
- * waiting on the form.
- */
 function describeFailure(error: unknown, whenUnauthorized: Failure): Failure {
   if (error instanceof AppwriteException) {
-    if (error.code === 429) {
-      return fail(
-        'rate_limited',
-        'Too many attempts. Wait a minute and try again.',
-      )
-    }
-    if (error.code === 401) {
-      return whenUnauthorized
-    }
+    if (error.code === 429) return fail('rate_limited')
+    if (error.code === 401) return whenUnauthorized
   }
 
   // Logged for us, not shown to them: the detail may name internals.
   console.error('[sign-in]', error)
 
-  return fail('unavailable', 'Sign-in is unavailable right now. Try again.')
+  return fail('unavailable')
 }
 
 export const requestSignInCode = createServerFn({ method: 'POST' })
@@ -87,10 +77,7 @@ export const requestSignInCode = createServerFn({ method: 'POST' })
 
       return { ok: true }
     } catch (error) {
-      return describeFailure(
-        error,
-        fail('unavailable', 'Sign-in is unavailable right now. Try again.'),
-      )
+      return describeFailure(error, fail('unavailable'))
     }
   })
 
@@ -104,10 +91,7 @@ export const verifySignInCode = createServerFn({ method: 'POST' })
     const userId = readPendingSignInCookie()
 
     if (!userId) {
-      return fail(
-        'expired',
-        'That code has expired. Enter your email to get a new one.',
-      )
+      return fail('expired')
     }
 
     try {
@@ -124,9 +108,6 @@ export const verifySignInCode = createServerFn({ method: 'POST' })
 
       return { ok: true }
     } catch (error) {
-      return describeFailure(
-        error,
-        fail('invalid_code', 'That code is wrong or has expired.'),
-      )
+      return describeFailure(error, fail('invalid_code'))
     }
   })
