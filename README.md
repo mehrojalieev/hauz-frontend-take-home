@@ -1,7 +1,8 @@
-# HAUZ frontend take-home starter
+# HAUZ frontend take-home
 
-A blank TanStack Start app plus the Appwrite Function you will call from it.
-Read `TASK.md` for what to build. This file is only about getting it running.
+Sign-in, onboarding and profile for a property marketplace, built on the
+starter in `TASK.md`. This file is about getting it running. The decisions, and
+the places I did not follow the brief, are in `NOTES.md`.
 
 ## What you need
 
@@ -10,8 +11,7 @@ Read `TASK.md` for what to build. This file is only about getting it running.
 
 ## Setup
 
-Budget 20 minutes. If you get stuck for longer than that, email us instead of
-grinding on it. Setup friction is not what we are testing.
+Roughly 15 minutes, most of it waiting for the Function to build.
 
 ### 1. Install dependencies
 
@@ -25,8 +25,8 @@ In the Appwrite Console, create a new project. From **Overview**, copy the
 **Project ID** and the **API Endpoint**. The endpoint is region specific, for
 example `https://fra.cloud.appwrite.io/v1`.
 
-Put both into `appwrite.config.json`, replacing `REPLACE_WITH_YOUR_PROJECT_ID`
-and the `endpoint` if your region differs.
+Put both into `appwrite.config.json`, replacing the `projectId` and the
+`endpoint` if your region differs.
 
 ### 3. Push the database, table and Function
 
@@ -37,27 +37,25 @@ npm run appwrite:push
 
 That creates the `main` database, the `personal_accounts` table with its unique
 index, and deploys the `personal-account` Function. The first deployment takes a
-minute or two while Appwrite builds it.
+minute or two.
 
-Confirm it worked: the Function should appear in the Console under **Functions**
-with a ready deployment, and its **Execute access** should be `users`.
+Confirm it worked: the Function should appear under **Functions** with a ready
+deployment, and its **Execute access** should be `users`.
 
-One warning about that command. `appwrite push table` treats
-`appwrite.config.json` as the full picture of your schema and deletes tables in
-the project that are not in it. On the fresh project you just made there is
-nothing to delete, so it is safe here. Do not run it against a project that has
-other tables in it.
+> `appwrite push table` treats `appwrite.config.json` as the whole schema and
+> deletes tables that are not in it. Safe on the fresh project you just made.
+> Never run it against a project that has anything else in it. To redeploy only
+> the Function later, use `npx appwrite push function --all --force`.
 
 ### 4. Create an API key
 
 Console, **Overview**, **Integrations**, **API keys**, **Create API key**.
 
-Give it these scopes:
+One scope: **`sessions.write`**.
 
-- `sessions.write`
-- `users.read`
-- `users.write`
-- `execution.write`
+The starter asked for four. Measured against this project the other three are
+never reached, and the reasoning is written out in `.env.example`. The key is
+used in exactly one call, `account.createSession`.
 
 Copy the secret once. You cannot read it again.
 
@@ -78,30 +76,64 @@ npm run dev
 
 http://localhost:3000
 
+## Trying it out
+
+Sign in with any email you can read. Appwrite Cloud sends the code from its own
+mail server on the free plan, so check your spam folder; if nothing arrives
+after a few minutes it may be rate limiting you, so wait rather than clicking
+send repeatedly.
+
+Worth a look while you are in there:
+
+- Hard refresh while signed in. The header is right in the first paint, not
+  corrected afterwards.
+- Open `/profile` signed out. It signs you in and comes back to `/profile`.
+- Try `/signin?redirect=https://example.com`. It goes to the home page.
+- Put something in the bio, save, clear it, save, then reload. It stays gone.
+- Appearance and language are in the header. Both are resolved on the server,
+  so a hard refresh does not flash the previous one.
+
+## Scripts
+
+```bash
+npm run dev            development server on :3000
+npm run build          production build
+npm run typecheck      tsc --noEmit
+npm run verify         typecheck, build, then check the client bundle
+npm run check:client   fail if anything server-only reached the browser
+npm run generate-routes
+npm run appwrite       the Appwrite CLI, scoped to this project's config
+```
+
+`check:client` is the first rule of the task turned into a check rather than a
+habit: it scans the built client output for the server SDK, for Appwrite
+credential headers, and for the literal value of `APPWRITE_API_KEY`. It is worth
+running before pushing, because the safe import and the unsafe one look
+identical at the import site.
+
 ## What is in here
 
 ```
-src/                          the app you are building; it is empty on purpose
-  router.tsx                  router setup
-  routes/__root.tsx           the document shell
-  routes/index.tsx            placeholder home page
-functions/personal-account/   the Function, already written
-appwrite.config.json          database, table and Function definitions
+src/
+  routes/                 the four screens, plus the root shell
+  components/             header, menu, icons, preferences
+  server/                 everything that talks to Appwrite; never imported by a component
+  shared/                 types, translations, and pure helpers both sides use
+  lib/shell.ts            the cached per-request shell
+scripts/                  the client bundle check
+functions/personal-account/   the Function, one message changed, see NOTES.md
+agent-log/                agent sessions and the mistakes I caught
 ```
 
-Other scripts:
-
-```bash
-npm run build       production build
-npm run typecheck   tsc --noEmit
-npm run appwrite    the Appwrite CLI, scoped to this project's config
-```
+Nothing under `src/server` may be imported from a component. TanStack Start
+replaces a `createServerFn` export with an RPC stub, so importing one is safe,
+but importing any ordinary value from the same module pulls the whole module,
+`node-appwrite` and all. That is what `src/shared` is for.
 
 ## The Function
 
-One Appwrite Function with three routes. It is deployed with **Execute access:
-users**, which means a signed-in Appwrite user can execute it and a guest
-cannot.
+One Appwrite Function with three routes, deployed with **Execute access:
+users**, so a signed-in Appwrite user can execute it and a guest cannot.
 
 | Route | Body | Result |
 |---|---|---|
@@ -115,14 +147,5 @@ On `PATCH`, a field you leave out keeps its stored value and `null` clears it.
 Every route answers `401` when the execution has no signed-in Appwrite user.
 
 Errors come back as `{ "error": "<code>", "message": "...", "issues": [...] }`.
-Codes you may see: `unauthorized`, `not_found`, `invalid_request`,
+Codes: `unauthorized`, `not_found`, `invalid_request`,
 `personal_account_inconsistent`, `internal_error`.
-
-You can read the source under `functions/personal-account/src/`. You may change
-it if you need to, but say why in `NOTES.md`.
-
-## Email codes
-
-Appwrite Cloud sends the sign-in codes from its own mail server on the free
-plan. Check your spam folder. If nothing arrives after a few minutes, Cloud may
-be rate limiting you, so wait and retry rather than clicking send repeatedly.
