@@ -213,7 +213,7 @@ back the pre-onboarding viewer, and the guards downstream believed it. The two
 functions read as a matched pair and are not one.
 
 **Fix.** `removeQueries`, so there is nothing to hand back and the next
-resolution has to ask. Commit `<hang>`.
+resolution has to ask. Commit `9c9a96f`.
 
 ---
 
@@ -234,7 +234,7 @@ working.
 
 **Fix.** Every server call now has a deadline, and passing it is reported the
 same way an unreachable server is, because that is what it is from the outside.
-Commit `<hang>`.
+Commit `9c9a96f`.
 
 ---
 
