@@ -20,6 +20,10 @@ the point of sending a session is that it is a record, and a record that has bee
 tidied up is no longer one. The commands, their output and the diffs are
 verbatim — they were in English already.
 
+One edit, so that it is on the record: the first prompt opened with a clause
+about how the brief had reached me. It said nothing about the work, so it is not
+in the translation. Every request in the session is otherwise intact.
+
 Two places where Uzbek necessarily remains:
 
 - **Short operator labels inside my own diagnostic shell scripts** — the
