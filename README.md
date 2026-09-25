@@ -93,6 +93,26 @@ Worth a look while you are in there:
 - Appearance and language are in the header. Both are resolved on the server,
   so a hard refresh does not flash the previous one.
 
+## If something does not work
+
+**Sign-in says it is unavailable, and nothing arrives.** Almost always a missing
+or half-filled `.env`. The signed-out pages render without it — the app does not
+call Appwrite until there is a session to resolve — so the first sign it is
+wrong is the first call that needs it. The terminal running `npm run dev` says
+which variable is missing.
+
+**The first action after a while takes ten seconds or more.** Appwrite Cloud
+lets a Function go cold on the free plan; a cold start measured twelve seconds
+against three hundred milliseconds warm. Calls have a thirty second deadline,
+which is where Appwrite itself gives up, so it degrades rather than hangs.
+
+**Every Function call returns 408.** The container has wedged, which happened
+once here. `npx appwrite push function --all --force` gives it a fresh one.
+
+**A page left open for a long time stops responding.** In development the
+server function ids change as files are edited, so a page from an older build
+calls ids the server no longer knows. Reload it.
+
 ## Scripts
 
 ```bash
