@@ -26,9 +26,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { title: 'HAUZ' },
     ],
     links: [
-      // One family, loaded at runtime rather than at build time, so a slow or
-      // blocked font host costs glyphs and nothing else. There is a real
-      // fallback stack in the stylesheet.
+      // At runtime, not build time, so a blocked font host costs glyphs only.
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       {
         rel: 'preconnect',
@@ -47,14 +45,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   // proxy may keep and hand to whoever asks next.
   headers: () => ({ 'Cache-Control': 'private, no-store' }),
 
-  // Runs on the server while the page is being rendered, before any HTML
-  // exists. That is what makes both the header and the palette right on the
-  // first paint rather than corrected after hydration. Every child route reads
-  // this same value, so no two parts of the page can disagree.
-  //
-  // Through the query cache, because resolving it costs a call to Appwrite and
-  // an execution of the Function, and moving between four screens should not
-  // pay that each time.
+  // Runs on the server before any HTML exists, which is what makes the header
+  // and the palette right on the first paint. Every child route reads the same
+  // value. Cached, because resolving it costs a call to Appwrite and a Function
+  // execution.
   beforeLoad: async ({ context }) =>
     await context.queryClient.ensureQueryData(shellQueryOptions()),
 
@@ -65,11 +59,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 /**
- * The root loader failed, which in practice means the server function itself
- * could not be reached; anything Appwrite refuses is already handled inside it
- * and comes back as `unknown`. Saying so is the point: the session is still
- * good, and an error screen that implies otherwise would send people to sign in
- * again for nothing.
+ * The root loader failed, which means the server function was unreachable —
+ * anything Appwrite refuses is already handled inside it. The session is still
+ * good, so the screen says so rather than implying otherwise.
  */
 function Fault() {
   const locale = useRouterState({
@@ -88,12 +80,8 @@ function Fault() {
   )
 }
 
-/**
- * Replaces the root component rather than rendering inside it, so there is no
- * header here and no preferences context to read from. The language is taken
- * off the router state the same way the shell takes it, which is the one thing
- * still available this far out.
- */
+/** Replaces the root component, so there is no header and no preferences
+ * context here; the language comes off the router state instead. */
 function NotFound() {
   const locale = useRouterState({
     select: (state) => parseLocale(state.matches[0]?.context.locale),
@@ -111,16 +99,12 @@ function NotFound() {
   )
 }
 
-/**
- * Anything that depends on route context belongs here rather than in the shell
- * below: the shell also wraps the error and not-found components, which render
- * in situations where the context this needs may never have been produced.
- */
+/** Context-dependent UI belongs here, not in the shell, which also wraps the
+ * error and not-found components. */
 function RootLayout() {
   const { theme, locale } = Route.useRouteContext()
 
-  // Resolving a route can mean a call to Appwrite and an execution of the
-  // Function. That is long enough that saying nothing reads as a dead click.
+  // Long enough that saying nothing reads as a dead click.
   const busy = useRouterState({
     select: (state) => state.isLoading || state.status === 'pending',
   })
@@ -135,11 +119,8 @@ function RootLayout() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  // Read off the router state rather than with useRouteContext, because the
-  // shell also wraps the error and not-found components, and those render in
-  // situations where the root context may never have been produced. Missing
-  // values fall back to the device's own palette and the default language,
-  // which beats the error page failing to render at all.
+  // Router state rather than useRouteContext: the shell also wraps the error
+  // and not-found components, which can render without root context.
   const preferences = useRouterState({
     select: (state) => ({
       theme: state.matches[0]?.context.theme,
@@ -148,9 +129,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   })
 
   return (
-    // Only an explicit choice is stamped. Leaving the attribute off for
-    // `system` is what lets prefers-color-scheme decide, which is the point of
-    // having three states rather than a boolean.
+    // No attribute for `system`, which is what lets the device decide.
     <html
       lang={preferences.locale ?? 'uz'}
       data-theme={

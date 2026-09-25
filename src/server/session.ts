@@ -20,11 +20,9 @@ export type CurrentUser = {
 }
 
 /**
- * Who is looking at this page, in the four shapes the app actually branches on.
- *
- * `unknown` earns its place. "We could not find out" is not the same as "signed
- * out", and collapsing the two is what the brief asks for and what this refuses
- * to do; see the note on the lookup below.
+ * The four shapes the app branches on. `unknown` earns its place: "we could not
+ * find out" is not "signed out", and collapsing the two is what the brief asks
+ * for and what this refuses to do.
  */
 export type Viewer =
   | { state: 'signed-out' }
@@ -39,16 +37,10 @@ type Resolved =
   | { status: 'signed-in'; user: CurrentUser }
 
 /**
- * The brief says that if this fails for any reason the person should be treated
- * as signed out and the cookie deleted. Followed literally that is a
- * reliability bug rather than a safety measure: "any reason" covers a timeout,
- * a 502 mid-deploy, a 429 from a rate limit, and none of those say the session
- * went bad. Acting as though they did would turn a few seconds of Appwrite
- * being unwell into a forced sign-out for everyone holding a valid session,
- * each of whom then has to go dig a six digit code out of their inbox.
- *
- * Only 401 and 403 clear the cookie, because only those actually say the
- * session is no longer good.
+ * The brief says to treat any failure here as signed out. A timeout, a 502
+ * mid-deploy and a 429 are not an invalid session, and acting as if they were
+ * would sign out everyone holding a good one. Only 401 and 403 clear the
+ * cookie. See NOTES.md.
  */
 async function resolveCurrentUser(): Promise<Resolved> {
   const secret = readSessionCookie()
@@ -88,15 +80,9 @@ export type Shell = {
 }
 
 /**
- * One call, every answer. The root route needs the person, their account, the
- * theme and the language on every render; asking separately would cost a round
- * trip each on every navigation. The Function is only reached once somebody is
- * actually signed in, so a signed-out visit still costs nothing.
- *
- * Resolving the preferences here rather than in the browser is what keeps a
- * hard refresh from flashing the wrong palette or the wrong language: both are
- * already on the document in the first HTML, for the same reason the header
- * already knows who is signed in.
+ * One call, every answer, because the root route needs all of it on every
+ * render. The Function is only reached once somebody is signed in, so a
+ * signed-out visit costs nothing.
  */
 export const loadShell = createServerFn({ method: 'GET' }).handler(
   async (): Promise<Shell> => {
@@ -137,12 +123,9 @@ async function resolveViewer(): Promise<Viewer> {
 }
 
 /**
- * Signing out has to happen in two places. Dropping the cookie alone leaves the
- * session alive in Appwrite, so a secret captured anywhere else still works.
- * Deleting the session alone leaves a cookie that answers 401 on every request.
- *
- * The cookie is cleared even when Appwrite refuses, because from this browser's
- * point of view the person asked to leave and that has to hold.
+ * Both places. The cookie alone leaves the session alive in Appwrite; the
+ * session alone leaves a cookie that answers 401. The cookie is cleared even if
+ * Appwrite refuses, because the person asked to leave.
  */
 export const signOut = createServerFn({ method: 'POST' }).handler(async () => {
   const secret = readSessionCookie()

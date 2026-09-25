@@ -1,24 +1,13 @@
 import { Client } from 'node-appwrite'
 
 /**
- * Every Appwrite call this app makes goes through one of these clients, and all
- * of them run on the server. Nothing in this file may be imported by a
- * component: the API key and the session secret must never reach the browser.
+ * Every Appwrite call happens through one of these, on the server. No component
+ * may import this file.
  *
- * Three rules are encoded here.
- *
- * 1. A Client is built per call and never held at module scope. `setSession()`
- *    mutates the instance, so a shared client would carry one visitor's session
- *    into the next request. Appwrite's own guidance is to never share a Client
- *    between two requests.
- *
- * 2. `process.env` is read inside the functions rather than at module scope. A
- *    module-scope read is easier for a bundler to inline into the client
- *    bundle, and on edge runtimes the environment is injected per request, so
- *    it is not populated when the module first evaluates.
- *
- * 3. The admin key is the exception, not the default. Once somebody is signed
- *    in, every call uses `userClient()`, which can only ever act as them.
+ * A Client is built per call, never at module scope: `setSession()` mutates the
+ * instance, so a shared one would carry a visitor's session into the next
+ * request. `process.env` is read inside the functions for the same reason a
+ * bundler should never see it at module scope.
  */
 
 function configured() {
@@ -35,21 +24,15 @@ function configured() {
 }
 
 /**
- * Carries no credentials at all.
- *
- * This exists for the first step of sign-in. `createEmailToken` returns the
- * one-time code in its response body when it is called with an API key, and a
- * code that reaches our server is a code that can leak from it. Called without
- * a key, the returned secret stays empty and only the inbox has the code.
+ * No credentials. `createEmailToken` returns the one-time code in its response
+ * body when called with an API key, and a code that reaches this process can
+ * leak from it.
  */
 export function guestClient() {
   return configured()
 }
 
-/**
- * Acts as the project itself and bypasses every permission check. Reserved for
- * the parts of sign-in that happen before a session exists.
- */
+/** Bypasses every permission check. Only for sign-in, before a session exists. */
 export function adminClient() {
   const apiKey = process.env.APPWRITE_API_KEY
 
@@ -61,11 +44,9 @@ export function adminClient() {
 }
 
 /**
- * Acts as the signed-in person and nothing more.
- *
- * This is also how the Function gets called. It is deployed with execute access
- * `users`, so an execution made with an API key would arrive carrying no
- * principal and be answered 401.
+ * Acts as the signed-in person and nothing more. Also how the Function is
+ * called: with execute access `users`, an API key execution carries no
+ * principal and is answered 401.
  */
 export function userClient(sessionSecret: string) {
   return configured().setSession(sessionSecret)

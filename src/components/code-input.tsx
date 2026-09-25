@@ -1,23 +1,12 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Six digits, six boxes.
+ * Six boxes over one string: index `i` shows `value[i]`, and typing only fills
+ * left to right so there are never gaps.
  *
- * One field would have been less code. It would also have been worse at the one
- * job it has: a code copied out of an email arrives with spaces or a
- * non-breaking space, phones offer the wrong keyboard for a text input, and a
- * wrong digit in the middle of a six character string is hard to spot.
- *
- * The value stays one string and the boxes are a view onto it, so the form
- * holds a single piece of state and the server validates the same thing the
- * person sees. Index `i` shows `value[i]`; there are never gaps, because typing
- * only ever fills left to right.
- *
- * Every handler reads and writes `latest` rather than the `value` prop. React
- * batches state updates, so during fast typing — or a paste that arrives as
- * six separate key events — each handler would otherwise see the value from
- * before the previous keystroke and overwrite it. That is not theoretical:
- * typing "866095" quickly produced "605".
+ * Handlers read and write `latest` rather than the `value` prop because React
+ * batches, and a fast burst would otherwise see the value from before the
+ * previous keystroke. Typing "866095" quickly produced "605".
  */
 
 const LENGTH = 6
@@ -43,16 +32,13 @@ export function CodeInput({
   const boxes = useRef<Array<HTMLInputElement | null>>([])
   const latest = useRef(value)
 
-  // Keeps the ref honest when the value changes from outside, such as the form
-  // clearing it after a wrong code.
+  // Honest when the value changes from outside, such as a rejected code.
   useEffect(() => {
     latest.current = value
   }, [value])
 
-  // Empty means either the step just opened or the code was rejected and
-  // cleared. Both want the caret in the first box: without this, a wrong code
-  // leaves the digits sitting there with focus nowhere, and the only way
-  // forward is to click in and delete six characters by hand.
+  // The step just opened, or a code was rejected and cleared. Both want the
+  // caret in the first box rather than nowhere.
   useEffect(() => {
     if (!value && !disabled) boxes.current[0]?.focus()
   }, [value, disabled])
@@ -121,8 +107,7 @@ export function CodeInput({
           }}
           type="text"
           inputMode="numeric"
-          // Only the first box advertises it, or the browser offers to put the
-          // whole code into every box.
+          // Only the first box, or the browser fills every box with all six.
           autoComplete={index === 0 ? 'one-time-code' : 'off'}
           aria-label={`${index + 1} / ${LENGTH}`}
           maxLength={1}
@@ -138,8 +123,8 @@ export function CodeInput({
           onChange={(event) => {
             const typed = digitsOnly(event.target.value)
             if (!typed) return
-            // Autofill and some browsers deliver a paste through onChange, so
-            // anything longer than a digit is treated as a fill.
+            // Autofill can arrive through onChange, so more than one digit is
+            // treated as a fill.
             if (typed.length > 1) handleFill(typed, index)
             else handleDigit(index, typed)
           }}
@@ -157,8 +142,7 @@ export function CodeInput({
           }}
           onPaste={(event) => {
             event.preventDefault()
-            // Pasting anywhere fills from the start: people copy the whole
-            // code, not the tail of it.
+            // From the start: people copy the whole code, not its tail.
             handleFill(event.clipboardData.getData('text'), 0)
           }}
         />

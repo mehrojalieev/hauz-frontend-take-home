@@ -11,33 +11,20 @@ import {
 } from '#/server/cookies'
 
 /**
- * Sign-in is two requests: one that sends the six digit code, one that redeems
- * it. Both run here, on the server, and neither hands the browser anything it
- * could use to impersonate somebody.
+ * Two requests, two different clients, and the split is measured:
  *
- * The two steps deliberately use different clients, and the reason is measured
- * rather than assumed:
+ *   createEmailToken, no API key   -> secret empty
+ *   createEmailToken, with API key -> secret is the 6 digit code
+ *   createSession                  -> secret only present for an API key
  *
- *   createEmailToken, no API key   -> secret comes back empty
- *   createEmailToken, with API key -> secret comes back as the 6 digit code
- *   createSession                  -> secret only present with an API key
- *
- * So step one runs unauthenticated: if it ran as admin, the code a person is
- * supposed to read from their inbox would arrive in our own response body, and
- * anything that reaches this process can leak from it. Step two has to run as
- * admin, because the session secret we need for the cookie is only returned to
- * an API key request. That is also the only reason the key needs
- * `sessions.write`.
+ * So step one runs unauthenticated — as admin, the code meant for an inbox
+ * would arrive in our own response body — and step two must run as admin,
+ * which is the only reason the key needs `sessions.write`.
  */
 
 /**
- * A code, not a sentence.
- *
- * Appwrite's own error text is never forwarded: it is written for developers
- * and can describe internals. But the wording is not decided here either,
- * because the person reading it has chosen a language and the server does not
- * own that choice. These functions say what went wrong and the browser says it
- * in Uzbek, Russian or English.
+ * A code, not a sentence. Appwrite's error text can describe internals, and the
+ * wording is not the server's to choose anyway: the reader picked a language.
  */
 type FailureCode = 'rate_limited' | 'invalid_code' | 'expired' | 'unavailable'
 
@@ -65,8 +52,8 @@ export const requestSignInCode = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }): Promise<Success | Failure> => {
     try {
-      // A fresh id for a new email; ignored when the address already has an
-      // account, which is what makes new and returning people look the same.
+      // Ignored when the address already has an account, which is what makes
+      // new and returning people look the same.
       const token = await new Account(guestClient()).createEmailToken({
         userId: ID.unique(),
         email: data.email,
@@ -100,9 +87,8 @@ export const verifySignInCode = createServerFn({ method: 'POST' })
         data.code,
       )
 
-      // Only the secret and its lifetime leave this function, and only into an
-      // HttpOnly cookie. The session object itself is never returned: anything
-      // a handler returns is serialized into the SSR payload.
+      // Only the secret leaves, and only into an HttpOnly cookie: whatever a
+      // handler returns is serialized into the SSR payload.
       writeSessionCookie(session.secret, session.expire)
       clearPendingSignInCookie()
 

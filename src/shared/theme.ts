@@ -1,10 +1,7 @@
 /**
- * Three states, not two, which is what makes this worth storing at all.
- *
- * `system` is a real answer: it means "follow the device", and it is the
- * default. Only an explicit choice is written down, and only an explicit choice
- * overrides prefers-color-scheme. Collapsing this to a boolean would force
- * everyone into a decision they never made.
+ * Three states. `system` means follow the device and is the default; only an
+ * explicit choice is stored, and only an explicit choice overrides
+ * prefers-color-scheme.
  */
 export const THEMES = ['system', 'light', 'dark'] as const
 

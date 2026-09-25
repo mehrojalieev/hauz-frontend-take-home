@@ -5,21 +5,13 @@ import {
 } from '@tanstack/react-start/server'
 
 /**
- * Two cookies, both HttpOnly, both written and read only on the server.
+ * HttpOnly, written and read only on the server. The session secret is a bearer
+ * token, and HttpOnly is what stops an XSS bug copying it out of the page.
  *
- * The session cookie holds the Appwrite session secret. That secret is a bearer
- * token: whoever holds it is that person. HttpOnly does not stop an XSS bug,
- * but it stops the token being copied out of the page, which turns a permanent
- * account takeover into something that ends when the tab closes.
- *
- * `__Host-` would be the stronger name. It forces Secure, pins the cookie to
- * this exact origin and forbids a Domain attribute, so a hostile subdomain
- * cannot overwrite it. It cannot be used in development, though: the prefix
- * requires Secure, and over plain http://localhost Chrome rejects `__Host-`
- * cookies outright while Safari rejects Secure cookies altogether. Only Firefox
- * accepts both. Hard-coding the prefix would leave the app broken for anyone
- * running `npm run dev` in Chrome or Safari, so the name and the Secure flag
- * are decided together, per environment.
+ * `__Host-` is the stronger name but cannot be hard-coded: it requires Secure,
+ * and over http://localhost Chrome rejects `__Host-` while Safari rejects
+ * Secure entirely. So the name and the flag are chosen together, per
+ * environment, or `npm run dev` would be broken in two browsers out of three.
  */
 
 const SESSION = 'hauz_session'
@@ -52,10 +44,8 @@ function secondsUntil(expiresAt: string) {
   return Number.isFinite(seconds) && seconds > 0 ? seconds : 0
 }
 
-/**
- * The cookie is given the session's own lifetime. Letting it outlive the
- * session would leave people looking signed in while every request answers 401.
- */
+/** Given the session's own lifetime, or people look signed in while every
+ * request answers 401. */
 export function writeSessionCookie(secret: string, expiresAt: string) {
   setCookie(named(SESSION), secret, options(secondsUntil(expiresAt)))
 }
@@ -69,12 +59,8 @@ export function clearSessionCookie() {
 }
 
 /**
- * Sign-in takes two requests: one that sends the code, one that redeems it.
- * Appwrite needs the user id from the first in the second, so the server parks
- * it here rather than handing it to the browser. The id never reaches client
- * code and the browser cannot swap it for somebody else's, which keeps this
- * consistent with the rest of the app: identity is never something the client
- * gets to assert.
+ * The user id that ties the two sign-in requests together is parked here rather
+ * than handed to the browser: identity is never something the client asserts.
  */
 export function writePendingSignInCookie(userId: string) {
   setCookie(
@@ -93,10 +79,8 @@ export function clearPendingSignInCookie() {
 }
 
 /**
- * Preferences. Not secrets, but written here so there is one place cookies are
- * set, and read on the server so both are settled before the first byte of
- * HTML. That is the same trick the header uses, and it is what rules out a
- * flash of the wrong palette or the wrong language on a hard refresh.
+ * Not secrets, but read on the server so both are settled before the first byte
+ * of HTML — the same reason the header knows who is signed in.
  */
 const THEME = 'hauz_theme'
 const LOCALE = 'hauz_locale'

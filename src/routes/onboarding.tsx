@@ -20,22 +20,17 @@ export const Route = createFileRoute('/onboarding')({
     typeof search.redirect === 'string' ? { redirect: search.redirect } : {},
   beforeLoad: ({ context, search }) => {
     const next = safeRedirect(search.redirect)
-    // Route UX, not a security boundary: the server function checks the session
-    // itself, because it is a reachable endpoint whatever this says.
+    // Route UX only; the server function checks the session itself.
     if (context.viewer.state === 'signed-out') {
       throw redirect({ to: '/signin', search: { redirect: redirectParam(next) } })
     }
     // Already onboarded, so this screen has nothing to ask. Send them on to
     // wherever they were originally headed.
     if (context.viewer.state === 'ready') {
-      // `to`, because safeRedirect narrows to a route the router knows. This
-      // was `href` and a bare string, which the router answered with a
-      // not-found rather than a navigation.
+      // `to`, not `href`: a bare string got answered with a not-found.
       throw redirect({ to: next })
     }
-    // `unknown` falls through on purpose. We cannot tell whether they have an
-    // account, and the create route is idempotent, so letting them submit is
-    // both safe and more useful than an error page.
+    // `unknown` falls through: create is idempotent, so submitting is safe.
   },
   component: Onboarding,
 })
@@ -59,8 +54,7 @@ function Onboarding() {
       lastName: string
       role: PersonalRole
     }) => withTimeout(createAccount({ data: input })),
-    // A rejection means the call never landed. Without this the form sits
-    // there and nobody can tell whether it worked.
+    // Without this the form sits there and nobody can tell what happened.
     onError: (cause) => {
       console.error('[onboarding]', cause)
       setIssues({})
@@ -99,14 +93,10 @@ function Onboarding() {
   })
 
   /**
-   * Two clicks on Continue must not make two accounts.
-   *
-   * This guard is the courtesy, not the mechanism. It only covers this one
-   * button in this one tab; a slow network, a second tab or a retry all slip
-   * past it. What actually holds is the unique index on the table: the loser of
-   * the race gets a conflict, and the Function turns that into the same 200 the
-   * winner saw, so both requests end with one account and neither sees an
-   * error. Verified with two overlapping requests.
+   * The courtesy, not the mechanism: this covers one button in one tab, and a
+   * slow network or a second tab gets past it. What holds is the unique index
+   * on the table, which turns the loser of the race into the same 200 the
+   * winner saw.
    */
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -170,10 +160,7 @@ function Onboarding() {
             </label>
           ))}
           {issues.role && <p>{issues.role}</p>}
-          {/*
-            Chosen once and kept. The Function has no way to change a role
-            afterwards, so this is the only screen that ever asks.
-          */}
+          {/* The only screen that asks: the Function cannot change a role. */}
           <p>{t('onboarding.roleWarning')}</p>
         </fieldset>
 

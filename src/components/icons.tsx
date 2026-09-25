@@ -1,13 +1,8 @@
 /**
- * The six icons this app actually uses, drawn here rather than pulled from a
- * package. An icon library would add a dependency and a few hundred kilobytes
- * of shapes nobody renders, to save writing these lines once.
- *
- * All of them share one grid and one stroke weight so they sit together, and
- * all take their colour from `currentColor` so they work in both themes without
- * being told which one they are in. They are decorative: every control that
- * uses one also carries a label or an aria-label, so they stay hidden from
- * assistive technology.
+ * Drawn here rather than installed: a library would add a dependency and a few
+ * hundred kilobytes of shapes nobody renders. One grid, one stroke weight,
+ * `currentColor` so both themes work, and `aria-hidden` because every control
+ * that uses one carries its own label.
  */
 
 type IconProps = {

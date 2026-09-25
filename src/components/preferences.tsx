@@ -5,22 +5,10 @@ import { translator, type Locale, type Translate } from '#/shared/i18n'
 import type { Theme } from '#/shared/theme'
 
 /**
- * Appearance and language, applied the instant they are chosen.
- *
- * They start life on the server: the shell renders `data-theme` and `lang` from
- * cookies during SSR, which is what stops a hard refresh flashing the wrong
- * palette or the wrong language. Changing one afterwards is a different
- * problem, and the first attempt solved it the same way, by writing the cookie
- * and re-running the root loader. Measured, that cost about a second of
- * nothing happening:
- *
- *   account.get          324ms
- *   function execution   490ms
- *
- * Both of those answer "who is signed in", which cannot change because somebody
- * picked a different colour. So the preference is applied here and the cookie
- * is written in the background. The server is told, but nobody waits for it,
- * and the viewer is never asked again.
+ * Both start on the server, so a hard refresh cannot flash the wrong one.
+ * Changing them afterwards used to re-run the root loader, which asked Appwrite
+ * who was signed in — 814ms to pick a colour. Now the choice applies here and
+ * the cookie is written in the background, with nobody waiting on it.
  */
 
 type Preferences = {
@@ -42,9 +30,8 @@ export function PreferencesProvider({
   locale: Locale
   children: React.ReactNode
 }) {
-  // Seeded from the server once. After that this is the source of truth: it is
-  // the only thing that writes either preference, so there is nothing to sync
-  // back from and a later render cannot contradict it.
+  // Seeded once, then the source of truth: nothing else writes either
+  // preference, so a later render cannot contradict it.
   const [theme, setThemeState] = useState(initialTheme)
   const [locale, setLocaleState] = useState(initialLocale)
 
@@ -58,8 +45,7 @@ export function PreferencesProvider({
         if (next === theme) return
         setThemeState(next)
 
-        // The shell put this attribute on <html> during SSR. React does not own
-        // that element after hydration, so it is kept in step by hand.
+        // React does not own <html> after hydration, so this is by hand.
         const root = document.documentElement
         if (next === 'system') root.removeAttribute('data-theme')
         else root.dataset.theme = next

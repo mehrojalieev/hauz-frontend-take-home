@@ -1,13 +1,8 @@
 /**
- * The parts of the Personal Account that both sides need: the shapes, and the
- * two roles a form has to offer.
- *
- * This file exists because of how server code is stripped. TanStack Start
- * replaces a `createServerFn` export with an RPC stub, so a component importing
- * only server functions never pulls their module into the browser. An ordinary
- * export is different: importing one value from a module drags the whole module
- * in, `node-appwrite` and all. Keeping anything a component needs out of the
- * server modules is what stops that happening by accident.
+ * What both sides need. This file exists because importing one ordinary value
+ * from a server module drags the whole module into the browser, `node-appwrite`
+ * and all — while importing a server function does not, since Start replaces it
+ * with an RPC stub. The two look identical at the import site.
  */
 
 export type PersonalRole = 'property_owner' | 'realtor'
@@ -34,11 +29,8 @@ export type FieldIssue = {
   message: string
 }
 
-/**
- * A partial edit. An absent key leaves the stored value alone, `null` clears
- * it. Role is not here and cannot be: the Function's update schema has no room
- * for it, so an account keeps the role it was created with.
- */
+/** Absent leaves a value alone, `null` clears it. Role is not here: the
+ * Function's update schema has no room for it either. */
 export type PersonalAccountPatch = {
   firstName?: string
   lastName?: string
@@ -46,7 +38,7 @@ export type PersonalAccountPatch = {
   bio?: string | null
 }
 
-/** What the profile form holds. Inputs deal in strings, never in null. */
+/** Inputs deal in strings, never in null. */
 export type ProfileForm = {
   firstName: string
   lastName: string
@@ -67,23 +59,15 @@ const REQUIRED = ['firstName', 'lastName'] as const
 const OPTIONAL = ['contactEmail', 'bio'] as const
 
 /**
- * Turns what is on screen into what the Function should be told, by comparing
- * against what was loaded.
+ * Three states, and a form only knows two. An emptied input hands back `""`,
+ * which the Function reads as neither "leave it" nor "clear it":
  *
- * This exists because there are three states and a form only knows about two.
- * The Function reads an absent key as "leave it", `null` as "clear it", and a
- * value as "store it". An `<input>` that has been emptied hands back `""`,
- * which is none of those, and both obvious shortcuts get it wrong:
+ *   send the whole form   -> bio: "" -> 400
+ *   drop the empty fields -> bio absent -> 200, and the old bio survives
  *
- *   send the whole form          -> `bio: ""` -> 400, the Function rejects it
- *   drop the empty fields        -> bio absent -> 200, and the old bio survives
- *
- * The second is the dangerous one. It succeeds, looks right on screen, and the
- * cleared value comes back on the next load.
- *
- * So: unchanged fields are left out, an emptied optional field becomes `null`,
- * and an emptied required field is left out entirely because it cannot be
- * cleared at all, which is why the form marks those `required`.
+ * The second is the dangerous one: it succeeds and looks right. So unchanged
+ * fields are left out, an emptied optional field becomes `null`, and a required
+ * one is left out because it cannot be cleared at all.
  */
 export function buildPatch(
   current: ProfileForm,

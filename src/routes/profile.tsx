@@ -17,10 +17,8 @@ import {
 
 export const Route = createFileRoute('/profile')({
   beforeLoad: ({ context, location }) => {
-    // Route UX, not the security boundary: saveProfile checks the session
-    // itself and the Function checks it again. Both hops carry where they were
-    // trying to go, so signing in brings them back here rather than dropping
-    // them on the home page.
+    // Route UX only. Both hops carry where they were going, so signing in
+    // comes back here rather than dropping them home.
     if (context.viewer.state === 'signed-out') {
       throw redirect({ to: '/signin', search: { redirect: redirectParam(location.href) } })
     }
@@ -39,9 +37,7 @@ function Profile() {
   const { t } = usePreferences()
 
   if (viewer.state !== 'ready') {
-    // Only reachable when the viewer is `unknown`: signed-out and onboarding
-    // were redirected above. We cannot show a profile we could not load, and
-    // we will not pretend they are signed out to get out of saying so.
+    // Only `unknown` reaches here. We will not pretend they are signed out.
     return (
       <main>
         <h1>{t('profile.title')}</h1>
@@ -58,8 +54,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
   const queryClient = useQueryClient()
   const { t } = usePreferences()
 
-  // What was loaded. Every decision about what to send is made against this,
-  // which is the only way to tell "left alone" from "cleared".
+  // The only way to tell "left alone" from "cleared".
   const [initial, setInitial] = useState<ProfileForm>(() => formFrom(account))
   const [form, setForm] = useState<ProfileForm>(() => formFrom(account))
   const [error, setError] = useState<string | null>(null)
@@ -80,9 +75,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
     },
     onSuccess: async (outcome) => {
       if (outcome.state === 'saved') {
-        // The stored values are the ones that count. Taking them from the
-        // response rather than from the form means the next edit is compared
-        // against what is really there.
+        // From the response, so the next edit compares against what is stored.
         const stored = formFrom(outcome.account)
         setInitial(stored)
         setForm(stored)
@@ -137,8 +130,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
       <form
         onSubmit={(event) => {
           event.preventDefault()
-          // Nothing changed means nothing to say. The Function rejects an empty
-          // patch, so sending one would turn a no-op into an error message.
+          // The Function rejects an empty patch, so a no-op would become an error.
           if (save.isPending || !changed) return
           setError(null)
           setIssues({})
@@ -220,11 +212,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
             value={role ? t(`onboarding.role.${role.value}`) : account.role}
             disabled
           />
-          {/*
-            Shown, never edited. A role is chosen once at onboarding and the
-            Function's update schema has no field for it, so an input that
-            looked editable would be lying.
-          */}
+          {/* Shown, never edited: the update schema has no field for it. */}
           <p id="role-hint">{t('profile.roleHint')}</p>
         </div>
 

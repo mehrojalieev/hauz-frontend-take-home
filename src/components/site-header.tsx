@@ -24,10 +24,9 @@ const THEME_ICONS: Record<Theme, typeof SunIcon> = {
 }
 
 /**
- * Reads what the root route resolved during SSR, so all of this renders
- * correctly in the very first HTML rather than after hydration. Fetching the
- * person in an effect would paint "Sign in" and correct it a moment later,
- * which is the flash the brief rules out.
+ * Reads what the root route resolved during SSR, so this is right in the first
+ * HTML. Fetching in an effect would paint "Sign in" and correct it after
+ * hydration, which is the flash the brief rules out.
  */
 export function SiteHeader() {
   const { viewer } = useRouteContext({ from: '__root__' })
@@ -94,9 +93,7 @@ export function SiteHeader() {
         </>
       )}
 
-      {/* Signed in, but they have not told us their name yet. The address they
-          signed in with beats an empty space, and the way out still has to be
-          there. */}
+      {/* No name yet, so the address they signed in with. */}
       {viewer.state === 'onboarding' && (
         <>
           <span className="who">{viewer.user.email}</span>
@@ -113,9 +110,7 @@ export function SiteHeader() {
         </Link>
       )}
 
-      {/* We asked and did not get an answer. Offering "Sign in" here would be a
-          guess, and a wrong guess costs somebody a session they still have, so
-          say only what is true. */}
+      {/* We do not know. "Sign in" would be a guess that costs a live session. */}
       {viewer.state === 'unknown' && (
         <span role="status">{t('nav.authUnavailable')}</span>
       )}

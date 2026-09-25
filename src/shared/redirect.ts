@@ -1,32 +1,12 @@
 /**
  * Where to send somebody after they sign in.
  *
- * The brief says to send people to whatever page the `redirect` query parameter
- * names. Taken at its word that is an open redirect, and the attack is cheap:
- *
- *   https://hauz.uz/signin?redirect=https://hauz-uz.com/login
- *
- * The person checks the domain, sees the real HAUZ, signs in for real, and is
- * handed to a copy that tells them their session expired and asks again. The
- * domain was right the whole time, so nothing looked wrong. A marketplace where
- * people sign in to talk about money is exactly where that pays.
- *
- * So the parameter is a request, not an instruction. Only a path inside this
- * app is honoured, and anything else quietly becomes the home page. This is an
- * allowlist by shape rather than a blocklist of tricks, because the tricks are
- * endless: `//evil.com` is protocol relative and resolves off-site, a backslash
- * is treated as a slash by some parsers, a newline can split a header, and
- * `javascript:` does not need a host at all.
- *
- * The shape check alone is not the whole answer, and a bug made that concrete:
- * a checked path is still only a string, and handing a string to the router as
- * `href` produced a not-found instead of a navigation. So the check ends in a
- * list of the routes worth returning to. The result is one of two literals,
- * which means the router can be given `to` and TypeScript verifies the
- * destination exists.
- *
- * `/signin` and `/onboarding` are deliberately not returnable; sending someone
- * back to where they just came from is a loop, not a courtesy.
+ * Honouring the `redirect` parameter as written is an open redirect:
+ * `?redirect=https://hauz-uz.com/login` signs you in on the real domain and
+ * hands you to a copy. So the shape is checked, and then the result is matched
+ * against the routes worth returning to — which makes the return type a union
+ * of two literals, so the router gets `to` and TypeScript checks it exists.
+ * See NOTES.md.
  */
 const RETURNABLE = ['/', '/profile'] as const
 

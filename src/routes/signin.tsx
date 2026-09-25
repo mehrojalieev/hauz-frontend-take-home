@@ -11,18 +11,14 @@ import { requestSignInCode, verifySignInCode } from '#/server/auth'
 import { redirectParam, safeRedirect } from '#/shared/redirect'
 
 export const Route = createFileRoute('/signin')({
-  // Declares the shape, and nothing more. It is tempting to sanitise here and
-  // be done, but measured against this version of the router that does not
-  // hold: validateSearch runs and returns the cleaned value, while
-  // Route.useSearch() still hands the component the raw one. Every read below
-  // goes through safeRedirect for that reason.
+  // Shape only. Measured: validateSearch returns the cleaned value while
+  // Route.useSearch() still hands the component the raw one, so every read
+  // below goes through safeRedirect.
   validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
     typeof search.redirect === 'string' ? { redirect: search.redirect } : {},
 
-  // Somebody already signed in has nothing to do here. Leaving this open let
-  // them sit on a sign-in form while the header showed their own name, which
-  // reads like the session broke. `unknown` falls through: we cannot tell, and
-  // guessing wrong would strand them on a page they cannot leave.
+  // A signed-in person sitting on a sign-in form reads like a broken session.
+  // `unknown` falls through: guessing wrong would strand them.
   beforeLoad: ({ context, search }) => {
     if (context.viewer.state === 'ready') {
       throw redirect({ to: safeRedirect(search.redirect) })
@@ -40,12 +36,8 @@ export const Route = createFileRoute('/signin')({
 
 /**
  * One screen, two steps. New and returning people see the same thing, because
- * Appwrite creates the account the first time it sees an address, so there is
- * nothing for the UI to branch on.
- *
- * Only the step lives in component state. The user id that ties the two
- * requests together stays in an HttpOnly cookie, so there is nothing on this
- * page for the browser to tamper with and a refresh mid-flow strands nobody.
+ * Appwrite creates the account on first sight of an address. Only the step is
+ * in component state; the user id stays in an HttpOnly cookie.
  */
 function SignIn() {
   const router = useRouter()
@@ -59,12 +51,7 @@ function SignIn() {
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  /**
-   * A rejected mutation means the call never completed: the network dropped, or
-   * the server function could not be reached. Without this the rejection goes
-   * nowhere and the form just sits there, which is worse than an error, because
-   * the person cannot tell whether it worked.
-   */
+  /** Without this a rejection goes nowhere and the form just sits there. */
   function reportFailure(cause: unknown) {
     console.error('[signin]', cause)
     setError(t('error.unreachable'))
@@ -92,12 +79,9 @@ function SignIn() {
     onSuccess: async (result) => {
       if (!result.ok) {
         setError(t(`error.${result.code}`))
-        // Always clear. A rejected code is not worth editing, and leaving it in
-        // place means whoever types next has to delete six characters first.
+        // A rejected code is not worth editing around.
         setCode('')
-        // The parked user id is gone, so there is nothing left to redeem. Send
-        // them back to the start rather than leaving them typing into a step
-        // that can no longer succeed.
+        // Nothing left to redeem, so back to the start.
         if (result.code === 'expired') setSentTo(null)
         return
       }
@@ -105,20 +89,15 @@ function SignIn() {
       setError(null)
 
       try {
-        // The cookie changed, but the router still holds the state it was
-        // rendered with. Re-resolve before navigating, or the next screen
-        // renders as though nobody signed in.
+        // The cookie changed; the router still holds the old state.
         await refreshShell(router, queryClient)
-        // Always onboarding, carrying where they were going. Its own guard
-        // forwards anyone who already has an account, so there is one
-        // destination here rather than a second lookup to choose between two.
+        // Always onboarding: its own guard forwards anyone who has an account.
         await router.navigate({
           to: '/onboarding',
           search: { redirect: redirectParam(next) },
         })
       } catch (cause) {
-        // Signing in worked; only the move afterwards did not. Say so, and
-        // leave a way through rather than a screen that does nothing.
+        // Signing in worked; only the move after it did not.
         console.error('[signin] navigation after sign-in', cause)
         setError(t('error.signedInNoRoute'))
       }
