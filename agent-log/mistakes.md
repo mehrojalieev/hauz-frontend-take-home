@@ -263,7 +263,7 @@ right about the widths and blind to the cascade.
 because a descendant selector inside a header that contains menus will keep
 finding those menus. The sign-in link stays out of the rule for a separate
 reason: it has no icon, so hiding its text leaves an empty button.
-Commit `<mobilemenu>`.
+Commit `a274100`.
 
 ---
 
