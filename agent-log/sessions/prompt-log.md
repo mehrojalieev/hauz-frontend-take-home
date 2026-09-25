@@ -41,7 +41,7 @@ Prompts: 36
 
 ### 1. Here is the brief. Explain it to me in detail — what each part asks for, what the goal is, what kind of project this is, and what I do not know yet. A deep review and a verdict. Do not do anything yet; I need to understand it first.
 
-- `Bash — List Telegram Desktop downloads`
+- `Bash — Locate the brief PDF`
 - `Bash — Check PDF tools`
 - `Bash — Extract PDF text`
 
