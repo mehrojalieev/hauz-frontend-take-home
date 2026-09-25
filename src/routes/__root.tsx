@@ -129,11 +129,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   })
 
   return (
-    // No attribute for `system`, which is what lets the device decide.
+    // No attribute for `system`, which is what hands the decision to the
+    // device. Anything else, including a shell rendered without context, gets
+    // the stored choice or the light default.
     <html
       lang={preferences.locale ?? 'uz'}
       data-theme={
-        preferences.theme === 'system' ? undefined : preferences.theme
+        (preferences.theme ?? 'light') === 'system'
+          ? undefined
+          : (preferences.theme ?? 'light')
       }
     >
       <head>
