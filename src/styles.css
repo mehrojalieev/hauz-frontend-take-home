@@ -230,6 +230,12 @@ header [role='status'] {
   white-space: nowrap;
 }
 
+/* The short form only appears where the long one will not fit. */
+.menu-short {
+  display: none;
+  white-space: nowrap;
+}
+
 /* Closed is `visibility: hidden`, not display:none. That takes the rows out of
    the tab order for real while still leaving something to animate. */
 .menu-list {
@@ -735,13 +741,50 @@ main [role='status'] {
 
 /* The address is the first thing to go when the bar runs out of room: the way
    out and the two settings are what somebody came to the header for. */
+/* A phone cannot carry the full header: the brand, two labelled menus and the
+   way out come to about 435px of content in a 390px window. The labels are what
+   goes — an appearance menu is legible as a sun or a moon, and a language as
+   three letters. Nothing is removed, only shortened. */
 @media (max-width: 640px) {
   .who {
     display: none;
   }
 
   header {
-    gap: 0.45rem;
+    gap: 0.4rem;
+    padding-inline: 0.85rem;
+  }
+
+  .menu-value {
+    display: none;
+  }
+
+  .menu-short {
+    display: inline;
+  }
+
+  .menu-trigger {
+    padding: 0 0.45rem;
+    gap: 0.25rem;
+  }
+
+  /* Nothing left to point at once the label is gone. */
+  .menu:first-child .menu-trigger > svg:last-child {
+    display: none;
+  }
+
+  header button {
+    padding: 0.4rem 0.6rem;
+  }
+}
+
+/* Narrower still, the way out becomes its icon. Not the sign-in link: that one
+   has no icon, so hiding its text would leave an empty button. */
+@media (max-width: 400px) {
+  header button:not(.menu-trigger) {
+    font-size: 0;
+    gap: 0;
+    padding: 0.45rem 0.55rem;
   }
 }
 

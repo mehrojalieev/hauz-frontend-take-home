@@ -19,6 +19,13 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   en: 'English',
 }
 
+/** For a narrow header, where the full name does not fit. */
+export const LOCALE_SHORT: Record<Locale, string> = {
+  uz: 'UZ',
+  ru: 'RU',
+  en: 'EN',
+}
+
 export function parseLocale(raw: unknown): Locale {
   return LOCALES.includes(raw as Locale) ? (raw as Locale) : 'uz'
 }

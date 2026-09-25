@@ -92,6 +92,8 @@ Worth a look while you are in there:
 - Put something in the bio, save, clear it, save, then reload. It stays gone.
 - Appearance and language are in the header. Both are resolved on the server,
   so a hard refresh does not flash the previous one.
+- Narrow the window to a phone. The header keeps the brand, both settings and
+  the way out; the labels give way to the icon and a language code.
 
 ## If something does not work
 

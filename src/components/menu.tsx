@@ -13,6 +13,8 @@ import { CheckIcon, ChevronDownIcon } from '#/components/icons'
 export type MenuOption<T extends string> = {
   value: T
   label: string
+  /** Shown instead of the label where the header is too narrow for it. */
+  short?: string
 }
 
 export function Menu<T extends string>({
@@ -135,6 +137,7 @@ export function Menu<T extends string>({
       >
         {leading}
         <span className="menu-value">{selected?.label}</span>
+        {selected?.short && <span className="menu-short">{selected.short}</span>}
         <ChevronDownIcon size={14} />
       </button>
 

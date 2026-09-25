@@ -13,7 +13,7 @@ import { Menu } from '#/components/menu'
 import { refreshShell } from '#/lib/shell'
 import { usePreferences } from '#/components/preferences'
 import { signOut } from '#/server/session'
-import { LOCALES, LOCALE_LABELS } from '#/shared/i18n'
+import { LOCALES, LOCALE_LABELS, LOCALE_SHORT } from '#/shared/i18n'
 import { THEMES, type Theme } from '#/shared/theme'
 
 /** The leading icon says which one is in effect without reading the label. */
@@ -77,6 +77,7 @@ export function SiteHeader() {
           options={LOCALES.map((option) => ({
             value: option,
             label: LOCALE_LABELS[option],
+            short: LOCALE_SHORT[option],
           }))}
           onChange={chooseLocale}
           leading={<GlobeIcon />}
