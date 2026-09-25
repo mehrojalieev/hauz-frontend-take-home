@@ -149,6 +149,52 @@ newly excluded routes. Commit `c0aeaa7`.
 
 ---
 
+## 7. Wrote every mutation without a failure path
+
+**What it wrote.** Three screens, seven `useMutation` calls, and not one
+`onError` between them. Every one handled the case where the server answered
+with a refusal, and none handled the case where the call never completed.
+
+**How I caught it.** I did not. Signing in froze: the code was accepted,
+nothing moved, and a second attempt said the code had expired. The server log
+showed no error for that attempt at all, because the failure was on the client
+and it had nowhere to go. An earlier entry in the same log named the likely
+cause — `Invalid server action param for serverFnId`, a page left open across
+enough hot reloads that its server function ids had gone stale.
+
+**Why it matters.** A rejected promise with no handler is a dead form. The
+person cannot tell whether it worked, so they try again, and the second attempt
+reports an expired code because the first one really did spend it. The bug is
+invisible in development, where you reload without thinking, and it is the
+first thing a reviewer would hit on a page left open.
+
+**Fix.** Every mutation now has `onError`. It logs the cause and says the
+server could not be reached, which is both true and actionable. The navigation
+after a successful sign-in is wrapped too, so "you are signed in but we could
+not open the page" is a thing the app can say rather than a thing it does.
+Commit `<errors>`.
+
+---
+
+## 8. A six box code input that dropped digits
+
+**What it wrote.** Each box wrote the whole code back through `onChange` on
+every keystroke, computing the next value from the `value` prop.
+
+**How I caught it.** Typing `866095` into it. The boxes showed `605`.
+
+**Why it matters.** React batches state updates, so each keystroke in a fast
+burst read the value from before the previous one and overwrote it. Typing at a
+normal speed by hand mostly hides it; a paste delivered as key events, an
+autofill, or anyone typing quickly does not. I would not have found this by
+reading the code, and neither would a reviewer.
+
+**Fix.** Handlers read and write a ref that is updated synchronously, so each
+keystroke sees what the one before it did. Retested with the same six digits,
+end to end, through a real sign-in. Commit `<errors>`.
+
+---
+
 <!--
 Still to record as they happen. Likely candidates, based on where this stack is
 easy to get wrong:

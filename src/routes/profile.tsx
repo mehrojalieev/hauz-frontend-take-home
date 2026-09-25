@@ -70,6 +70,13 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
 
   const save = useMutation({
     mutationFn: () => saveProfile({ data: patch }),
+    // A rejection means the call never landed. Without this the form sits
+    // there and nobody can tell whether it worked.
+    onError: (cause) => {
+      console.error('[profile]', cause)
+      setIssues({})
+      setError(t('error.unreachable'))
+    },
     onSuccess: async (outcome) => {
       if (outcome.state === 'saved') {
         // The stored values are the ones that count. Taking them from the

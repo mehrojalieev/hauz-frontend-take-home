@@ -100,7 +100,12 @@ const uz: Dictionary = {
 
   'error.rate_limited': 'Urinishlar juda ko‘p. Bir daqiqa kutib qayta urining.',
   'error.invalid_code': 'Kod noto‘g‘ri yoki muddati o‘tgan.',
-  'error.expired': 'Kod muddati o‘tdi. Yangisini olish uchun emailni kiriting.',
+  'error.expired':
+    'Bu kod endi ishlamaydi — ishlatilgan yoki muddati tugagan. Yangisini so‘rang.',
+  'error.unreachable':
+    'Serverga ulana olmadik. Internetni tekshirib, qayta urinib ko‘ring.',
+  'error.signedInNoRoute':
+    'Kirdingiz, lekin sahifani ocha olmadik. Sahifani yangilang.',
   'error.unavailable': 'Hozir ishlamayapti. Qayta urinib ko‘ring.',
   'error.role_conflict': 'Sizda boshqa rol bilan akkaunt bor.',
   'error.invalid': 'Kiritilgan ma’lumotni tekshiring.',
@@ -183,7 +188,12 @@ const ru: Dictionary = {
 
   'error.rate_limited': 'Слишком много попыток. Подождите минуту.',
   'error.invalid_code': 'Код неверный или устарел.',
-  'error.expired': 'Код устарел. Укажите почту, чтобы получить новый.',
+  'error.expired':
+    'Этот код больше не действует — он уже использован или истёк. Запросите новый.',
+  'error.unreachable':
+    'Не удалось связаться с сервером. Проверьте соединение и попробуйте снова.',
+  'error.signedInNoRoute':
+    'Вы вошли, но страницу открыть не удалось. Обновите её.',
   'error.unavailable': 'Сейчас недоступно. Попробуйте ещё раз.',
   'error.role_conflict': 'У вас уже есть аккаунт с другой ролью.',
   'error.invalid': 'Проверьте введённые данные.',
@@ -264,7 +274,12 @@ const en: Dictionary = {
 
   'error.rate_limited': 'Too many attempts. Wait a minute and try again.',
   'error.invalid_code': 'That code is wrong or has expired.',
-  'error.expired': 'That code has expired. Enter your email to get a new one.',
+  'error.expired':
+    'That code no longer works — it was used already, or it ran out. Ask for a new one.',
+  'error.unreachable':
+    'We could not reach the server. Check your connection and try again.',
+  'error.signedInNoRoute':
+    'You are signed in, but we could not open the page. Reload it.',
   'error.unavailable': 'That did not work. Try again.',
   'error.role_conflict': 'You already have an account with a different role.',
   'error.invalid': 'Check what you entered.',

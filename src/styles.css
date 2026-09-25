@@ -511,10 +511,33 @@ textarea:focus {
   outline: none;
 }
 
-/* A six digit code is read back digit by digit, so give it the spacing. */
-input[inputmode='numeric'] {
+/* Six boxes for six digits. A wrong digit in the middle of one long string is
+   hard to find; in a row of boxes it is obvious. */
+.code {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  max-width: 19rem;
+}
+
+.code input {
+  padding: 0.6rem 0;
+  font-size: 1.15rem;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.22em;
+  text-align: center;
+  caret-color: var(--accent);
+}
+
+@media (max-width: 380px) {
+  .code {
+    gap: 0.35rem;
+  }
+
+  .code input {
+    padding: 0.5rem 0;
+    font-size: 1rem;
+  }
 }
 
 textarea {

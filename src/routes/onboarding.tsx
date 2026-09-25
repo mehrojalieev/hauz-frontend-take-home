@@ -58,6 +58,13 @@ function Onboarding() {
       lastName: string
       role: PersonalRole
     }) => createAccount({ data: input }),
+    // A rejection means the call never landed. Without this the form sits
+    // there and nobody can tell whether it worked.
+    onError: (cause) => {
+      console.error('[onboarding]', cause)
+      setIssues({})
+      setError(t('error.unreachable'))
+    },
     onSuccess: async (outcome) => {
       if (outcome.state === 'ready') {
         await refreshShell(router, queryClient)
