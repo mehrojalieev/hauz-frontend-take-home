@@ -44,10 +44,20 @@ Only secrets, and one piece of unrelated private data:
 - one directory listing of an unrelated personal folder, marked in place as
   `[trimmed: a listing of an unrelated personal folder]`
 
-Two kinds of payload are noted rather than reproduced, and each says so where it
-stood: scratch files written outside this repo (a long study document I wrote for
-myself in Uzbek), and blocks of working output that were predominantly Uzbek.
-Every prompt and every reply is present in full.
+**Every prompt and every reply is present in full.** What is noted rather than
+reproduced is tool payload, and each one says so where it stood:
+
+- a long command that wrote a source file keeps its first sixty lines — the
+  file's final state is in the repo and every version of it is in the commit
+  history, so printing the whole body a second time only added length
+- command output longer than twenty-five lines keeps its first twenty-five
+- the machinery for translating and exporting this session, which is about the
+  transcript rather than about the app
+- scratch files written outside this repo — chiefly a long study document I wrote
+  for myself in Uzbek — and blocks of working output that were predominantly Uzbek
+
+Nothing in the conversation itself was shortened. The file is long because the
+session was long: 587 tool calls, and the code that was written is here.
 
 Screenshots I pasted appear as `[screenshot]`; the model's internal reasoning is
 not part of the transcript.
