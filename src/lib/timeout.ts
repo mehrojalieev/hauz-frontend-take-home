@@ -10,7 +10,15 @@
  * So calls are given a deadline. Passing it is reported the same way a network
  * failure is, because to the person waiting they are the same thing.
  */
-const DEFAULT_MS = 20_000
+/**
+ * Thirty seconds, because that is where Appwrite gives up on a synchronous
+ * execution. Anything shorter and we would call a call failed while the
+ * platform was still working on it, which is a lie that costs somebody their
+ * form. It is a long time to look at a spinner, and the progress bar and the
+ * disabled button are what carry that; this is the ceiling, not the target. A
+ * warm Function answers in about 300ms. A cold one was measured at 12 seconds.
+ */
+const DEFAULT_MS = 30_000
 
 export class TimeoutError extends Error {
   constructor(ms: number) {
