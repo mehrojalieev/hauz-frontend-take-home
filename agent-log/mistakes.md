@@ -238,6 +238,35 @@ Commit `9c9a96f`.
 
 ---
 
+## 11. Made the header fit a phone by breaking both menus on it
+
+**What it wrote.** To fit the header into 390px, a rule that drops the text from
+the log-out button and leaves its icon:
+
+    header button:not(.menu-trigger) { font-size: 0 }
+
+**How I caught it.** I did not. The menus opened onto nothing on a phone: the
+panel appeared, and there was nothing in it.
+
+**Why it matters.** Six of the eight buttons inside that header are the option
+rows of the two menus. The selector matched all of them and set their text to
+zero, and at `(0,1,2)` it outranked the `(0,1,1)` of `.menu-list button`, so it
+won quietly. Nothing was hidden and nothing errored — the rows were still there,
+still clickable, still announced to a screen reader. They just had no size. A
+sighted person on a phone could not change the theme or the language at all.
+
+Worth naming: I had checked this change by arithmetic, because the screenshot
+tool captures a fixed width whatever the window is set to. The arithmetic was
+right about the widths and blind to the cascade.
+
+**Fix.** `header > button`, which is the log-out button and nothing else,
+because a descendant selector inside a header that contains menus will keep
+finding those menus. The sign-in link stays out of the rule for a separate
+reason: it has no icon, so hiding its text leaves an empty button.
+Commit `<mobilemenu>`.
+
+---
+
 <!--
 Still to record as they happen. Likely candidates, based on where this stack is
 easy to get wrong:

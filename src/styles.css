@@ -773,15 +773,20 @@ main [role='status'] {
     display: none;
   }
 
-  header button {
+  /* The direct child, which is the log-out button. A descendant selector here
+     also catches the rows inside an open menu, which are buttons too. */
+  header > button {
     padding: 0.4rem 0.6rem;
   }
 }
 
-/* Narrower still, the way out becomes its icon. Not the sign-in link: that one
-   has no icon, so hiding its text would leave an empty button. */
+/* Narrower still, the way out becomes its icon. Strictly the direct child: the
+   first version of this rule was `header button:not(.menu-trigger)`, which also
+   matched the six option rows inside the two menus and set their text to zero.
+   The menus opened onto nothing. Not the sign-in link either — it has no icon,
+   so hiding its text would leave an empty button. */
 @media (max-width: 400px) {
-  header button:not(.menu-trigger) {
+  header > button {
     font-size: 0;
     gap: 0;
     padding: 0.45rem 0.55rem;
