@@ -59,9 +59,34 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     await context.queryClient.ensureQueryData(shellQueryOptions()),
 
   component: RootLayout,
+  errorComponent: Fault,
   notFoundComponent: NotFound,
   shellComponent: RootDocument,
 })
+
+/**
+ * The root loader failed, which in practice means the server function itself
+ * could not be reached; anything Appwrite refuses is already handled inside it
+ * and comes back as `unknown`. Saying so is the point: the session is still
+ * good, and an error screen that implies otherwise would send people to sign in
+ * again for nothing.
+ */
+function Fault() {
+  const locale = useRouterState({
+    select: (state) => parseLocale(state.matches[0]?.context.locale),
+  })
+  const t = translator(locale)
+
+  return (
+    <main>
+      <h1>{t('fault.title')}</h1>
+      <p>{t('fault.body')}</p>
+      <button type="button" onClick={() => window.location.reload()}>
+        {t('fault.retry')}
+      </button>
+    </main>
+  )
+}
 
 /**
  * Replaces the root component rather than rendering inside it, so there is no

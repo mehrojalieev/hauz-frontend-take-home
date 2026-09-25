@@ -60,7 +60,6 @@ const uz: Dictionary = {
 
   'onboarding.title': 'O‘zingiz haqingizda',
   'onboarding.subtitle': 'Profilingiz e’lonlaringiz yonida ko‘rinadi.',
-  'onboarding.intro': 'HAUZ dan foydalanishdan oldin shu kerak.',
   'onboarding.firstName': 'Ism',
   'onboarding.lastName': 'Familiya',
   'onboarding.roleLegend': 'Men',
@@ -88,6 +87,11 @@ const uz: Dictionary = {
   'notFound.title': 'Sahifa topilmadi',
   'notFound.body': 'Bu manzilda hech narsa yo‘q. Havola eskirgan bo‘lishi mumkin.',
   'notFound.home': 'Bosh sahifaga',
+
+  'fault.title': 'Nimadir noto‘g‘ri ketdi',
+  'fault.body':
+    'Sahifani yuklay olmadik. Hisobingizdan chiqarilmadingiz — bir ozdan keyin qayta urinib ko‘ring.',
+  'fault.retry': 'Qayta urinish',
 
   'error.rate_limited': 'Urinishlar juda ko‘p. Bir daqiqa kutib qayta urining.',
   'error.invalid_code': 'Kod noto‘g‘ri yoki muddati o‘tgan.',
@@ -134,7 +138,6 @@ const ru: Dictionary = {
 
   'onboarding.title': 'Расскажите о себе',
   'onboarding.subtitle': 'Профиль виден рядом с вашими объявлениями.',
-  'onboarding.intro': 'Это нужно, чтобы пользоваться HAUZ.',
   'onboarding.firstName': 'Имя',
   'onboarding.lastName': 'Фамилия',
   'onboarding.roleLegend': 'Я',
@@ -162,6 +165,11 @@ const ru: Dictionary = {
   'notFound.title': 'Страница не найдена',
   'notFound.body': 'По этому адресу ничего нет. Возможно, ссылка устарела.',
   'notFound.home': 'На главную',
+
+  'fault.title': 'Что-то пошло не так',
+  'fault.body':
+    'Не удалось загрузить страницу. Вы не вышли из аккаунта — попробуйте ещё раз через минуту.',
+  'fault.retry': 'Повторить',
 
   'error.rate_limited': 'Слишком много попыток. Подождите минуту.',
   'error.invalid_code': 'Код неверный или устарел.',
@@ -206,7 +214,6 @@ const en: Dictionary = {
 
   'onboarding.title': 'Tell us who you are',
   'onboarding.subtitle': 'Your profile shows up next to your listings.',
-  'onboarding.intro': 'You need this before you can use HAUZ.',
   'onboarding.firstName': 'First name',
   'onboarding.lastName': 'Last name',
   'onboarding.roleLegend': 'I am a',
@@ -234,6 +241,11 @@ const en: Dictionary = {
   'notFound.title': 'Page not found',
   'notFound.body': 'There is nothing at this address. The link may be out of date.',
   'notFound.home': 'Go home',
+
+  'fault.title': 'Something went wrong',
+  'fault.body':
+    'We could not load this page. You have not been signed out; try again in a moment.',
+  'fault.retry': 'Try again',
 
   'error.rate_limited': 'Too many attempts. Wait a minute and try again.',
   'error.invalid_code': 'That code is wrong or has expired.',
