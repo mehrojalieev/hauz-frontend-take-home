@@ -120,6 +120,28 @@ svg {
   flex: none;
 }
 
+/* A thread of accent at the very top while a route resolves. Quiet enough to
+   ignore, present enough that a click never looks swallowed. */
+.progress {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 50;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+  opacity: 0;
+  transition:
+    transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 200ms ease;
+}
+
+.progress[data-busy='true'] {
+  transform: scaleX(0.75);
+  opacity: 1;
+}
+
 /* ── Header ─────────────────────────────────────────────────────────────── */
 
 header {
@@ -369,6 +391,64 @@ a:hover {
 
 .go:hover {
   text-decoration: underline;
+}
+
+/* ── Panels ─────────────────────────────────────────────────────────────── */
+
+.panel {
+  margin-top: 1.75rem;
+  padding: clamp(1.25rem, 4vw, 1.5rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.panel h2 {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.panel dl {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0 0 1.25rem;
+}
+
+.panel dl > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.panel dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.panel dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* An unset optional field is not a value. Giving "Not set" the same weight as a
+   real answer makes the record harder to scan, not easier. */
+.panel dd.empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-weak);
+  border-radius: var(--radius-pill);
 }
 
 /* ── Forms ──────────────────────────────────────────────────────────────── */

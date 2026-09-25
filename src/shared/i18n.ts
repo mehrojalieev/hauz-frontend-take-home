@@ -36,6 +36,11 @@ const uz: Dictionary = {
   'theme.light': 'Yorug‘',
   'theme.dark': 'Qorong‘i',
 
+  'home.greeting': 'Salom, {name}',
+  'home.summary': 'Profilingiz',
+  'home.notSet': 'Kiritilmagan',
+  'home.edit': 'Profilni tahrirlash',
+  'home.covers': 'Bu qurilma kirish, ro‘yxatdan o‘tish va profil oqimini qamrab oladi.',
   'home.tagline':
     'O‘zbekistondagi ko‘chmas mulk. Bu qurilma kirish oqimini qamrab oladi.',
   'home.signedInAs': '{name} sifatida kirgansiz.',
@@ -114,6 +119,11 @@ const ru: Dictionary = {
   'theme.light': 'Светлая',
   'theme.dark': 'Тёмная',
 
+  'home.greeting': 'Здравствуйте, {name}',
+  'home.summary': 'Ваш профиль',
+  'home.notSet': 'Не указано',
+  'home.edit': 'Редактировать профиль',
+  'home.covers': 'Эта сборка охватывает вход, регистрацию и профиль.',
   'home.tagline':
     'Недвижимость в Узбекистане. Эта сборка охватывает вход в аккаунт.',
   'home.signedInAs': 'Вы вошли как {name}.',
@@ -191,6 +201,11 @@ const en: Dictionary = {
   'theme.light': 'Light',
   'theme.dark': 'Dark',
 
+  'home.greeting': 'Hello, {name}',
+  'home.summary': 'Your profile',
+  'home.notSet': 'Not set',
+  'home.edit': 'Edit profile',
+  'home.covers': 'This build covers sign-in, onboarding and the profile.',
   'home.tagline': 'Property in Uzbekistan. This build covers the sign-in slice.',
   'home.signedInAs': 'Signed in as {name}.',
   'home.viewProfile': 'View your profile',

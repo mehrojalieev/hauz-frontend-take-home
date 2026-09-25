@@ -119,8 +119,15 @@ function NotFound() {
 function RootLayout() {
   const { theme, locale } = Route.useRouteContext()
 
+  // Resolving a route can mean a call to Appwrite and an execution of the
+  // Function. That is long enough that saying nothing reads as a dead click.
+  const busy = useRouterState({
+    select: (state) => state.isLoading || state.status === 'pending',
+  })
+
   return (
     <PreferencesProvider theme={theme} locale={locale}>
+      <div className="progress" data-busy={busy} aria-hidden="true" />
       <SiteHeader />
       <Outlet />
     </PreferencesProvider>

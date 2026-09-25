@@ -50,6 +50,10 @@ export function Menu<T extends string>({
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
 
+  // Whether the active row changed because of a key press. Hovering moves the
+  // highlight, but it must not move focus: a pointer user who brushes the list
+  // while typing should not have the caret yanked out from under them.
+  const byKeyboard = useRef(true)
   const root = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const rows = useRef<Array<HTMLButtonElement | null>>([])
@@ -63,7 +67,7 @@ export function Menu<T extends string>({
   // Moving focus has to wait for the rows to become focusable, which only
   // happens once the open state has painted.
   useEffect(() => {
-    if (open) rows.current[active]?.focus()
+    if (open && byKeyboard.current) rows.current[active]?.focus()
   }, [open, active])
 
   useEffect(() => {
@@ -77,7 +81,8 @@ export function Menu<T extends string>({
     return () => document.removeEventListener('pointerdown', onPointerDown)
   }, [open])
 
-  function openMenu(index = selectedIndex) {
+  function openMenu(index = selectedIndex, keyboard = true) {
+    byKeyboard.current = keyboard
     setActive(index)
     setOpen(true)
   }
@@ -103,6 +108,8 @@ export function Menu<T extends string>({
   }
 
   function onListKeyDown(event: React.KeyboardEvent) {
+    byKeyboard.current = true
+
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault()
@@ -168,7 +175,10 @@ export function Menu<T extends string>({
               rows.current[index] = node
             }}
             onClick={() => choose(option.value)}
-            onMouseEnter={() => setActive(index)}
+            onMouseEnter={() => {
+              byKeyboard.current = false
+              setActive(index)
+            }}
           >
             <span>{option.label}</span>
             {option.value === value && <CheckIcon size={15} />}
