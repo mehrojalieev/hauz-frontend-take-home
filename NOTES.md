@@ -92,4 +92,13 @@ reader's language.
   They are English today, which is the one place the language stops.
 - Back off on 429 and give "resend code" a cooldown; Appwrite rate limits and
   the UI currently just reports it.
+- Execute the Function asynchronously for writes and poll, or keep it warm. A
+  cold start measured twelve seconds against three hundred milliseconds warm,
+  and the container wedged once, answering 408 for every call until it was
+  redeployed. Calls have a thirty second deadline, which is where Appwrite
+  gives up, so this degrades rather than hangs — but a thirty second wait is
+  not a design, it is a ceiling.
+- Delete the Personal Account when the Appwrite user goes. Deleting a user
+  leaves its row behind, which I found by cleaning up after my own tests. An
+  event-triggered Function would close that.
 - Narrow the deployed key to `sessions.write`, and rotate it on a schedule.
