@@ -172,7 +172,7 @@ first thing a reviewer would hit on a page left open.
 server could not be reached, which is both true and actionable. The navigation
 after a successful sign-in is wrapped too, so "you are signed in but we could
 not open the page" is a thing the app can say rather than a thing it does.
-Commit `<errors>`.
+Commit `f8663dc`.
 
 ---
 
@@ -191,7 +191,7 @@ reading the code, and neither would a reviewer.
 
 **Fix.** Handlers read and write a ref that is updated synchronously, so each
 keystroke sees what the one before it did. Retested with the same six digits,
-end to end, through a real sign-in. Commit `<errors>`.
+end to end, through a real sign-in. Commit `f8663dc`.
 
 ---
 
