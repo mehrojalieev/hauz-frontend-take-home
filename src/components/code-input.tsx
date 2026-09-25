@@ -49,6 +49,14 @@ export function CodeInput({
     latest.current = value
   }, [value])
 
+  // Empty means either the step just opened or the code was rejected and
+  // cleared. Both want the caret in the first box: without this, a wrong code
+  // leaves the digits sitting there with focus nowhere, and the only way
+  // forward is to click in and delete six characters by hand.
+  useEffect(() => {
+    if (!value && !disabled) boxes.current[0]?.focus()
+  }, [value, disabled])
+
   useEffect(() => {
     if (value.length === LENGTH) onComplete?.(value)
     // Fires for a finished code, not for every keystroke.

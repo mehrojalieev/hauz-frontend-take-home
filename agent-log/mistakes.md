@@ -195,6 +195,49 @@ end to end, through a real sign-in. Commit `f8663dc`.
 
 ---
 
+## 9. Refreshed a cache that refused to be refreshed
+
+**What it wrote.** `refreshShell` called `queryClient.invalidateQueries` and
+then `router.invalidate()`, on the reasoning that invalidating marks the data
+stale and the next resolution therefore refetches it.
+
+**How I caught it.** Onboarding. Filling the form and pressing Continue created
+the account and navigated home, where the home page asked the person to finish
+setting up their account and the header showed their email instead of their
+name. The write had worked; every read after it was still the old answer.
+
+**Why it matters.** `invalidateQueries` marks data stale. `ensureQueryData`,
+which is what the root route resolves through, returns whatever is cached and
+only fetches when there is nothing there. Stale is not nothing, so it handed
+back the pre-onboarding viewer, and the guards downstream believed it. The two
+functions read as a matched pair and are not one.
+
+**Fix.** `removeQueries`, so there is nothing to hand back and the next
+resolution has to ask. Commit `<hang>`.
+
+---
+
+## 10. Left three ways for the UI to hang with no way out
+
+**What it wrote.** Mutations that handle a refusal and a rejection, and nothing
+for a request that never answers.
+
+**How I caught it.** Watching somebody else use it: the onboarding button sat
+on "Saving…" indefinitely. The request had been cut mid-flight — a dev server
+restarting under it, in this case — and a promise that never settles leaves
+`isPending` true forever. No error, no recovery, nothing but a reload.
+
+**Why it matters.** The two failure paths I had written both assume the call
+comes back. Dropped connections do not announce themselves, and a spinner that
+cannot stop is worse than an error, because it looks like the app is still
+working.
+
+**Fix.** Every server call now has a deadline, and passing it is reported the
+same way an unreachable server is, because that is what it is from the outside.
+Commit `<hang>`.
+
+---
+
 <!--
 Still to record as they happen. Likely candidates, based on where this stack is
 easy to get wrong:

@@ -17,6 +17,14 @@ import { loadShell } from '#/server/session'
  * Anything that changes who is signed in has to clear it, which is what
  * `refreshShell` is for. Calling `router.invalidate()` alone would re-run the
  * loader against a cache that still holds the person who just signed out.
+ *
+ * It removes the entry rather than invalidating it, and the difference is the
+ * whole point. `invalidateQueries` marks data stale; `ensureQueryData` hands
+ * back whatever is cached and only fetches when there is nothing there. So an
+ * invalidate followed by a route resolution returned the same answer as before:
+ * finishing onboarding landed on a home page still asking you to onboard, with
+ * your email in the header instead of your name. Removing it leaves nothing to
+ * hand back, so the next resolution has to ask.
  */
 export const SHELL_QUERY_KEY = ['shell'] as const
 
@@ -29,6 +37,6 @@ export function shellQueryOptions() {
 }
 
 export async function refreshShell(router: AnyRouter, queryClient: QueryClient) {
-  await queryClient.invalidateQueries({ queryKey: SHELL_QUERY_KEY })
+  queryClient.removeQueries({ queryKey: SHELL_QUERY_KEY })
   await router.invalidate()
 }

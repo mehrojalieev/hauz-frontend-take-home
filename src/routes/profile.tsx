@@ -3,6 +3,7 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { refreshShell } from '#/lib/shell'
+import { withTimeout } from '#/lib/timeout'
 import { usePreferences } from '#/components/preferences'
 import { saveProfile } from '#/server/profile'
 import { redirectParam } from '#/shared/redirect'
@@ -69,7 +70,7 @@ function ProfileForm({ account }: { account: PersonalAccount }) {
   const changed = Object.keys(patch).length > 0
 
   const save = useMutation({
-    mutationFn: () => saveProfile({ data: patch }),
+    mutationFn: () => withTimeout(saveProfile({ data: patch })),
     // A rejection means the call never landed. Without this the form sits
     // there and nobody can tell whether it worked.
     onError: (cause) => {

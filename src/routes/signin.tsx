@@ -6,6 +6,7 @@ import { CodeInput } from '#/components/code-input'
 import { HomeIcon } from '#/components/icons'
 import { usePreferences } from '#/components/preferences'
 import { refreshShell } from '#/lib/shell'
+import { withTimeout } from '#/lib/timeout'
 import { requestSignInCode, verifySignInCode } from '#/server/auth'
 import { redirectParam, safeRedirect } from '#/shared/redirect'
 
@@ -71,7 +72,7 @@ function SignIn() {
 
   const request = useMutation({
     mutationFn: (address: string) =>
-      requestSignInCode({ data: { email: address } }),
+      withTimeout(requestSignInCode({ data: { email: address } })),
     onError: reportFailure,
     onSuccess: (result, address) => {
       if (!result.ok) {
@@ -86,18 +87,18 @@ function SignIn() {
 
   const verify = useMutation({
     mutationFn: (entered: string) =>
-      verifySignInCode({ data: { code: entered } }),
+      withTimeout(verifySignInCode({ data: { code: entered } })),
     onError: reportFailure,
     onSuccess: async (result) => {
       if (!result.ok) {
         setError(t(`error.${result.code}`))
+        // Always clear. A rejected code is not worth editing, and leaving it in
+        // place means whoever types next has to delete six characters first.
+        setCode('')
         // The parked user id is gone, so there is nothing left to redeem. Send
         // them back to the start rather than leaving them typing into a step
         // that can no longer succeed.
-        if (result.code === 'expired') {
-          setSentTo(null)
-          setCode('')
-        }
+        if (result.code === 'expired') setSentTo(null)
         return
       }
 

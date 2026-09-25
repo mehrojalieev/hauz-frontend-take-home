@@ -3,6 +3,7 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { refreshShell } from '#/lib/shell'
+import { withTimeout } from '#/lib/timeout'
 import { usePreferences } from '#/components/preferences'
 
 import { createAccount } from '#/server/profile'
@@ -57,7 +58,7 @@ function Onboarding() {
       firstName: string
       lastName: string
       role: PersonalRole
-    }) => createAccount({ data: input }),
+    }) => withTimeout(createAccount({ data: input })),
     // A rejection means the call never landed. Without this the form sits
     // there and nobody can tell whether it worked.
     onError: (cause) => {
